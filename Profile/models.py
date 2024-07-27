@@ -4,9 +4,11 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.crypto import get_random_string
 
+def generate_code():
+    return get_random_string(10)
+
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    code = models.CharField(max_length=10, default=lambda: Profile.generate_code(), unique=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='profile')
     inviter = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='invited_users', null=True)
     photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
     score = models.IntegerField(default=0)
@@ -15,10 +17,9 @@ class Profile(models.Model):
     followers = models.ManyToManyField(User, related_name='followings')
     notification_enabled = models.BooleanField(default=False)
 
-    def generate_code(self):
-        return get_random_string(10)
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
+    print("POST SAVE CALLED.....")
     p, c = Profile.objects.get_or_create(user=instance)
     p.save()
