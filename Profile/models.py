@@ -15,11 +15,11 @@ class Profile(models.Model):
     streak_start = models.DateField(null=True, blank=True)
     streak_end = models.DateField(null=True, blank=True)
     followers = models.ManyToManyField(User, related_name='followings')
-    notification_enabled = models.BooleanField(default=False)
+    # notification_enabled = models.BooleanField(null=True, blank=True)
+    notif_enabled = models.BooleanField(null=True, blank=True)
 
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
-    print("POST SAVE CALLED.....")
     p, c = Profile.objects.get_or_create(user=instance)
-    p.save()
+    instance.profile.save()

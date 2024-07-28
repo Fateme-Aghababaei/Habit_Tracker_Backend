@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from Habit.models import Habit
 from django.utils.crypto import get_random_string
 
-def generate_link(self):
+def generate_link():
     code = get_random_string(10)
     BASE_URL = 'localhost:8000/'
     return f'{BASE_URL}challenges/{code}'

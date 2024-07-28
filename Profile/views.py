@@ -1,17 +1,20 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions, status
-from .serializers import LoginSerializer, UserSerializer
+from .serializers import LoginSerializer, UserSerializer, FollowerFollowingSerializer, EditUserInfoSerializer, ChangePhotoSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from datetime import date
+import os
+from django.conf import settings
 
 @api_view(['POST'])
 @permission_classes((permissions.AllowAny,))
 def login(request):
+    # TODO Add daily login reward
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
         print(serializer.data)
@@ -36,6 +39,7 @@ def logout(request):
 @api_view(['POST'])
 @permission_classes((permissions.AllowAny,))
 def signup(request):
+    # TODO add score in case of inviter
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
         email = serializer.validated_data['email']
@@ -53,12 +57,12 @@ def signup(request):
 
         user.profile.streak_start = date.today()
         user.profile.streak_end = date.today()
+        user.profile.notif_enabled = False
         if 'inviter' in serializer.validated_data:
             inviter_username = serializer.validated_data['inviter']
             inviter = User.objects.get(username=inviter_username)
             user.profile.inviter = inviter
         user.save()
-        user.profile.save()
 
         return Response({
             'token': token.key, 
@@ -70,6 +74,90 @@ def signup(request):
 
 @api_view(['GET'])
 def get_user(request):
-    user: User = request.user
+    if 'username' in request.data:
+        user: User = User.objects.get(username=request.data['username'])
+    else:
+        user: User = request.user
     serializer = UserSerializer(user)
     return Response(serializer.data, status.HTTP_200_OK)
+
+@api_view(['GET'])
+def update_streak(request):
+    user: User = request.user
+    if (date.today() - user.profile.streak_end).days > 1:
+        user.profile.streak_start = date.today()
+        user.profile.streak_end = date.today()
+        streak = 1
+    else:
+        user.profile.streak_end = date.today()
+        streak = (user.profile.streak_end - user.profile.streak_start).days + 1
+
+    user.save()
+    return Response({
+        'streak': streak,
+    }, status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_follower_following(request):
+    if 'username' in request.data:
+        user: User = User.objects.get(username=request.data['username'])
+    else:
+        user: User = request.user
+
+    serializer = FollowerFollowingSerializer(instance=user)
+    return Response(serializer.data, status.HTTP_200_OK)
+    
+@api_view(['POST'])
+def follow(request):
+    try:
+        if 'username' in request.data:
+            user: User = User.objects.get(username=request.data['username'])
+        else:
+            return Response({'error': 'نام کاربری وارد نشده است.'}, status.HTTP_400_BAD_REQUEST)
+    except:
+        return Response({'error': 'نام کاربری وارد شده صحیح نیست.'}, status.HTTP_404_NOT_FOUND)
+    
+    user.profile.followers.add(request.user)
+    return Response({}, status.HTTP_200_OK)
+
+@api_view(['POST'])
+def unfollow(request):
+    try:
+        if 'username' in request.data:
+            user: User = User.objects.get(username=request.data['username'])
+        else:
+            return Response({'error': 'نام کاربری وارد نشده است.'}, status.HTTP_400_BAD_REQUEST)
+    except:
+        return Response({'error': 'نام کاربری وارد شده صحیح نیست.'}, status.HTTP_404_NOT_FOUND)
+    
+    user.profile.followers.remove(request.user)
+    return Response({}, status.HTTP_200_OK)
+
+@api_view(['POST'])
+def edit_profile(request):
+    serializer = EditUserInfoSerializer(data=request.data)
+    if serializer.is_valid():
+        if 'username' in serializer.validated_data:
+            request.user.username = serializer.validated_data['username']
+        if 'first_name' in serializer.validated_data:
+            request.user.first_name = serializer.validated_data['first_name']
+        if 'notif_enabled' in serializer.validated_data['profile']:
+            request.user.profile.notif_enabled = serializer.validated_data['profile']['notif_enabled']
+        request.user.save()
+        return Response({}, status.HTTP_200_OK)
+    return Response({'error': serializer.error_messages}, status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def change_photo(request):
+    serializer = ChangePhotoSerializer(data=request.data)
+    if serializer.is_valid():
+        print(serializer.validated_data)
+        if request.user.profile.photo:
+            prev_photo = request.user.profile.photo.path
+            os.remove(prev_photo)
+            request.user.profile.photo.delete()
+        if serializer.validated_data:
+            request.user.profile.photo = serializer.validated_data['profile']['photo']
+        request.user.save()
+        return Response({}, status.HTTP_200_OK)
+    return Response({'error': serializer.error_messages}, status.HTTP_400_BAD_REQUEST)
