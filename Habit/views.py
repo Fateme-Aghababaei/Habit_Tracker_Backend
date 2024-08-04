@@ -3,6 +3,9 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from .serializers import TagSerializer, AddEditHabitSerializer, HabitSerializer
 from .models import Tag, Habit
+from datetime import datetime
+from django.db.models.functions import Substr
+from django.db.models import F, BooleanField
 
 
 @api_view(['POST'])
@@ -42,31 +45,31 @@ def edit_tag(request):
 
 @api_view(['DELETE'])
 def delete_tag(request):
-    serializer = TagSerializer(data=request.data)
-    if serializer.is_valid():
-        try:
-            tag = Tag.objects.get(
-                id=serializer.validated_data['id'], user=request.user)
-            tag.delete()
-            return Response({
-                'id': serializer.validated_data['id']
-            }, status.HTTP_200_OK)
-        except:
-            return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
-    return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
+    id = request.GET.get('id')
+    if id is None:
+        return Response({'error': 'آیدی برچسب را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
+    id = int(id)
+    try:
+        tag = Tag.objects.get(id=id, user=request.user)
+        tag.delete()
+        return Response({
+            'id': id
+        }, status.HTTP_200_OK)
+    except:
+        return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
 def get_tag(request):
-    serializer = TagSerializer(data=request.data)
-    if serializer.is_valid():
-        try:
-            tag = Tag.objects.get(
-                id=serializer.validated_data['id'], user=request.user)
-            return Response(TagSerializer(instance=tag).data, status.HTTP_200_OK)
-        except:
-            return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
-    return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'})
+    id = request.GET.get('id')
+    if id is None:
+        return Response({'error': 'آیدی برچسب را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
+    id = int(id)
+    try:
+        tag = Tag.objects.get(id=id, user=request.user)
+        return Response(TagSerializer(instance=tag).data, status.HTTP_200_OK)
+    except:
+        return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -136,13 +139,45 @@ def edit_habit(request):
 
 @api_view(['DELETE'])
 def delete_habit(request):
-    data = request.data
-    if 'id' not in data:
-        return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
-    habit_id = int(data['id'])
+    id = request.GET.get('id')
+    if id is None:
+        return Response({'error': 'آیدی عادت را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
+    habit_id = int(id)
     try:
         habit = Habit.objects.get(id=habit_id, user=request.user)
         habit.delete()
         return Response({'id': habit_id}, status.HTTP_200_OK)
     except:
         return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def get_habit(request):
+    id = request.GET.get('id')
+    if id is None:
+        return Response({'error': 'آیدی عادت را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
+    id = int(id)
+    try:
+        habit = Habit.objects.get(id=id, user=request.user)
+        return Response(HabitSerializer(instance=habit).data, status.HTTP_200_OK)
+    except:
+        return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def get_user_habits(request):
+    habit_date = request.GET.get('date')
+    if habit_date is None:
+        return Response({'error': 'تاریخ را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
+    try:
+        habit_date = datetime.strptime(habit_date, '%Y-%m-%d').date()
+    except:
+        return Response({'error': 'تاریخ معتبر نیست.'}, status.HTTP_400_BAD_REQUEST)
+
+    weekday = (habit_date.weekday + 2) % 7
+
+    # Repeated Habits
+    Habit.objects.filter(user=request.user, is_repeated=True,
+                         due_date__gte=habit_date).annotate(week_day=Substr(F('repeated_days'), weekday), output_filed=BooleanField()).filter(week_day=True)
+
+    return Response({})

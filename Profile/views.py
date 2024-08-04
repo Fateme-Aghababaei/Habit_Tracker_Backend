@@ -59,6 +59,13 @@ def signup(request):
         while User.objects.filter(username__iexact=username):
             username = f'user#{get_random_string(8)}'.lower()
 
+        try:
+            if 'inviter' in serializer.validated_data:
+                inviter_username = serializer.validated_data['inviter']
+                inviter = User.objects.get(username=inviter_username)
+        except:
+            return Response({'error': 'معرف پیدا نشد.'}, status.HTTP_404_NOT_FOUND)
+
         user = User.objects.create_user(
             username=username, email=email, password=password)
         token, created = Token.objects.get_or_create(user=user)
@@ -67,13 +74,9 @@ def signup(request):
         user.profile.streak_end = date.today()
         user.profile.notif_enabled = False
         user.first_name = username
-        try:
-            if 'inviter' in serializer.validated_data:
-                inviter_username = serializer.validated_data['inviter']
-                inviter = User.objects.get(username=inviter_username)
-                user.profile.inviter = inviter
-        except:
-            return Response({'error': 'معرف پیدا نشد.'}, status.HTTP_404_NOT_FOUND)
+        if 'inviter' in serializer.validated_data:
+            user.profile.inviter = inviter
+
         user.save()
         DjangoLogin(request, user=user)
 
@@ -88,8 +91,10 @@ def signup(request):
 
 @api_view(['GET'])
 def get_user(request):
-    if 'username' in request.data:
-        user: User = User.objects.get(username=request.data['username'])
+    username = request.GET.get('username')
+    print(username)
+    if username:
+        user: User = User.objects.get(username=username)
     else:
         user: User = request.user
     serializer = UserSerializer(user)
@@ -99,24 +104,31 @@ def get_user(request):
 @api_view(['GET'])
 def update_streak(request):
     user: User = request.user
-    if (date.today() - user.profile.streak_end).days > 1:
+    date_diff = (date.today() - user.profile.streak_end).days
+    if date_diff > 1:
         user.profile.streak_start = date.today()
         user.profile.streak_end = date.today()
         streak = 1
-    else:
+        state = 'reset'
+    elif date_diff == 1:
         user.profile.streak_end = date.today()
         streak = (user.profile.streak_end - user.profile.streak_start).days + 1
+        state = 'increased'
+    else:
+        state = 'unchanged'
 
     user.save()
     return Response({
         'streak': streak,
+        'state': state
     }, status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 def get_follower_following(request):
-    if 'username' in request.data:
-        user: User = User.objects.get(username=request.data['username'])
+    username = request.GET.get('username')
+    if username:
+        user: User = User.objects.get(username=username)
     else:
         user: User = request.user
 
