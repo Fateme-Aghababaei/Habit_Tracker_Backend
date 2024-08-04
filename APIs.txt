@@ -1,0 +1,414 @@
+Profile:
+
+*[POST] baseurl/profile/login/
+	BODY: {
+		email: ...,
+		password: ...
+	}
+	
+	RETURN: 
+	1. Success: HTTP_200_OK
+		{
+			token: ...,
+			username: ...
+		}
+	2. User Not Found: HTTP_404_NOT_FOUND
+		{
+			error: نام کاربری یا رمز عبور نادرست است.
+		}
+	3. Wrong Data: HTTP_400_BAD_REQUEST
+		{
+			error: اطلاعات صحیح نمی‌باشد.
+		}
+		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/profile/signup/
+	BODY: {
+		email: ...,
+		password: ...,
+		inviter: ...,  [OPTIONAL], #INVITER USERNAME
+	}
+	
+	RETURN: 
+	1. Success: HTTP_200_OK
+		{
+			token: ...,
+			username: ...
+		}
+	2. User Not Found: HTTP_409_CONFLICT
+		{
+			error: کاربری با این ایمیل وجود دارد.
+		}
+	3. Wrong Data: HTTP_400_BAD_REQUEST
+		{
+			error: اطلاعات صحیح نمی‌باشد.
+		}
+		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		
+*[GET] baseurl/profile/logout/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN:
+	Success: HTTP_200_OK
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/profile/get_user/?username=...[OPTIONAL]
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{
+		id: ...,
+		username: ...,
+		email: ...,
+		first_name: ...,
+		photo: ...,		# Photo URL
+		score: ...,
+		streak: ...,
+		inviter: ...	# Inviter username
+		followers_num: ...,
+		followings_num: ...,
+		notif_enabled: ...
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/profile/update_streak/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{
+		streak: ...,
+		state: ... [unchanged|reset|increased]
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+*[GET] baseurl/profile/get_follower_following/?username=...[OPTIONAL]
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{
+		username: ...,
+		first_name: ...,
+		followers: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ...,
+			}, ...
+		],
+		followings: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ...,
+			}, ...
+		]
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+*[POST] baseurl/profile/follow/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		username: ...
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+*[POST] baseurl/profile/unfollow/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		username: ...
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+*[POST] baseurl/profile/edit_profile/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		first_name: ...,
+		username: ...,
+		notif_enabled: ...
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/profile/change_photo/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		photo: ..., [Image File] [OPTIONAL] # Send photo=null to delete photo from database
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	
+	
+#####################################################################################################################################################################
+#####################################################################################################################################################################
+Habit:
+
+*[POST] baseurl/habit/add_tag/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		name: ...,
+		color: ...
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		color: ...
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/habit/edit_tag/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		id: ...,		# id to find the tag
+		name: ...,		# new name (mandatory, even if no changes)
+		color: ...		# new color (mandatory, even if no changes)
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		color: ...
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[DELETE] baseurl/habit/delete_tag/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{
+		id: ...
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/habit/get_tag/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		color: ...
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/habit/get_user_tags/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	[
+		{
+			id: ...,
+			name: ...,
+			color: ...
+		},
+		...
+	]
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/habit/add_habit/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		name: ...,
+		description: ...,
+		tag: ...,			# tag id (int) (must belong to the authorized user)
+		due_date: ...,
+		is_repeated: ..., 	# boolean
+		repeated_days: ...	# 7-digit binary string (each digit for each day of week starting from saturday) 
+	}
+	
+	RETURN: 
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...,
+		}
+		start_date: ...,
+		due_date: ...,
+		is_repeated: ...,
+		repeated_days: ...,
+		score: ...
+	}
+	
+	2. Tag Not Found: HTTP_404_NOT_FOUND
+	{
+		error: برچسب یافت نشد
+	{
+	
+	3. is_repeated = True & repeated_days = null or 0000000: HTTP_400_BAD_REQUEST
+	{
+		error: روزهای تکرار باید مشخص شوند.
+	}
+	
+	4. is_repeated = False & due_date = null: HTTP_400_BAD_REQUEST
+	{
+		error: تاریخ پایان باید مشخص شود.
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/habit/edit_habit/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		id: ..., 			# id to find the habit
+		name: ...,
+		description: ...,
+		tag: ...,			# tag id (int) (must belong to the authorized user)
+		due_date: ...,
+		is_repeated: ..., 	# boolean
+		repeated_days: ...	# 7-digit binary string (each digit for each day of week starting from saturday) 
+	}
+	
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...,
+		}
+		start_date: ...,
+		due_date: ...,
+		is_repeated: ...,
+		repeated_days: ...,
+		score: ...
+	}
+	
+	2. Tag Not Found: HTTP_404_NOT_FOUND
+	{
+		error: برچسب یافت نشد
+	{
+	
+	3. Habit Not Found: HTTP_404_NOT_FOUND
+	{
+		error: عادت یافت نشد.
+	{
+	
+	4. is_repeated = True & repeated_days = null or 0000000: HTTP_400_BAD_REQUEST
+	{
+		error: روزهای تکرار باید مشخص شوند.
+	}
+	
+	5. is_repeated = False & due_date = null: HTTP_400_BAD_REQUEST
+	{
+		error: تاریخ پایان باید مشخص شود.
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[DELETE] baseurl/habit/delete_habit/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...
+	}
+	
+	2. Habit Not Found: HTTP_404_NOT_FOUND
+	{
+		error: عادت یافت نشد.
+	{
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/habit/get_habit/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...,
+		}
+		start_date: ...,
+		due_date: ...,
+		is_repeated: ...,
+		repeated_days: ...,
+		score: ...
+	}
+	
+	2. Habit Not Found: HTTP_404_NOT_FOUND
+	{
+		error: عادت یافت نشد.
+	{
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
