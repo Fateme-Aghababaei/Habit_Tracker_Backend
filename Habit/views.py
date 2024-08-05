@@ -1,11 +1,12 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework import permissions, status
 from rest_framework.response import Response
-from .serializers import TagSerializer, AddEditHabitSerializer, HabitSerializer
-from .models import Tag, Habit
-from datetime import datetime
+from .serializers import TagSerializer, AddEditHabitSerializer, HabitSerializer, HabitInstanceSerializer, CompleteHabitSerializer
+from .models import Tag, Habit, HabitInstance
+from datetime import datetime, date
 from django.db.models.functions import Substr
-from django.db.models import F, BooleanField
+from django.db.models import F, Q
+from django.contrib.auth.models import User
 
 
 @api_view(['POST'])
@@ -165,6 +166,20 @@ def get_habit(request):
 
 
 @api_view(['GET'])
+def get_habit_instance(request):
+    id = request.GET.get('id')
+    if id is None:
+        return Response({'error': 'آیدی تکرار عادت را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
+    id = int(id)
+    try:
+        habit_instance = HabitInstance.objects.get(
+            id=id, habit__user=request.user)
+        return Response(HabitInstanceSerializer(instance=habit_instance).data, status.HTTP_200_OK)
+    except:
+        return Response({'error': 'تکرار عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
 def get_user_habits(request):
     habit_date = request.GET.get('date')
     if habit_date is None:
@@ -174,10 +189,51 @@ def get_user_habits(request):
     except:
         return Response({'error': 'تاریخ معتبر نیست.'}, status.HTTP_400_BAD_REQUEST)
 
-    weekday = (habit_date.weekday + 2) % 7
+    weekday = (habit_date.weekday() + 2) % 7
+
+    # Passed Repeated Habits
+    passed_habit_instances = HabitInstance.objects.filter(habit__user=request.user, habit__is_repeated=True,
+                                                          habit__start_date__lte=habit_date, habit__modify_date__gt=habit_date, due_date=habit_date)
 
     # Repeated Habits
-    Habit.objects.filter(user=request.user, is_repeated=True,
-                         due_date__gte=habit_date).annotate(week_day=Substr(F('repeated_days'), weekday), output_filed=BooleanField()).filter(week_day=True)
+    repeated_habits = Habit.objects.filter(Q(user=request.user), Q(is_repeated=True), Q(modify_date__lte=habit_date), Q(
+        due_date=None) | Q(due_date__gte=habit_date)).filter(repeated_days__regex='^\d{'+str(weekday)+'}1\d{'+str(6-weekday)+'}$')
 
-    return Response({})
+    # Non-Repeated Habits
+    non_repeated_habits = Habit.objects.filter(
+        user=request.user, is_repeated=False, due_date=habit_date)
+
+    habits = repeated_habits.union(non_repeated_habits)
+    instances = []
+    for h in habits:
+        try:
+            hi = h.instances.get(due_date=habit_date)
+        except:
+            hi = HabitInstance(habit=h, due_date=habit_date)
+        instances.append(hi)
+
+    for hi in passed_habit_instances:
+        if hi.habit not in habits:
+            instances.append(hi)
+
+    return Response(HabitInstanceSerializer(instance=instances, many=True).data, status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def complete_habit(request):
+    serializer = CompleteHabitSerializer(data=request.data)
+    if serializer.is_valid():
+        print(serializer.validated_data)
+        hi, _ = HabitInstance.objects.get_or_create(
+            habit__user=request.user, habit__id=serializer.validated_data['habit']['id'], due_date=serializer.validated_data['due_date'])
+        if hi.is_completed:
+            return Response({'error': 'عادت قبلا انجام شده است.'}, status.HTTP_400_BAD_REQUEST)
+        hi.is_completed = True
+        hi.completed_date = date.today()
+        hi.save()
+
+        request.user.profile.score += hi.habit.score
+        request.user.save()
+
+        return Response(HabitInstanceSerializer(instance=hi).data, status.HTTP_200_OK)
+    return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)

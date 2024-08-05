@@ -408,7 +408,110 @@ Habit:
 	2. Habit Not Found: HTTP_404_NOT_FOUND
 	{
 		error: عادت یافت نشد.
-	{
+	}
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+*[GET] baseurl/habit/get_habit_instance/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		habit_id: ...,
+		instance_id: ...,
+		name: ...,
+		description: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...,
+		}
+		start_date: ...,
+		due_date: ...,
+		is_repeated: ...,
+		repeated_days: ...,
+		score: ...,
+		is_completed: ...,
+		completed_date: ...
+	}
+	
+	2. Habit Not Found: HTTP_404_NOT_FOUND
+	{
+		error: تکرار عادت یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/habit/get_user_habits/?date=YYYY-MM-DD
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN:
+	1. Success: HTTP_200_OK
+	[
+		{
+			habit_id: ...,
+			instance_id: ...,
+			name: ...,
+			description: ...,
+			tag: {
+				id: ...,
+				name: ...,
+				color: ...,
+			}
+			start_date: ...,
+			due_date: ...,
+			is_repeated: ...,
+			repeated_days: ...,
+			score: ...,
+			is_completed: ...,
+			completed_date: ...
+		},
+		...
+	]
+
+	2. Wrong Date: HTTP_400_BAD_REQUEST
+	{
+		error: تاریخ معتبر نیست.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/habit/complete_habit/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		habit_id: ...,
+		date: ...
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		habit_id: ...,
+		instance_id: ...,
+		name: ...,
+		description: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...,
+		}
+		start_date: ...,
+		due_date: ...,
+		is_repeated: ...,
+		repeated_days: ...,
+		score: ...,
+		is_completed: ...,
+		completed_date: ...
+	}
+	2. Already Complete: HTTP_400_BAD_REQUEST
+	{
+		error: عادت قبلا انجام شده است.
+	}

@@ -22,6 +22,7 @@ class Habit(models.Model):
     description = models.TextField()
     tag = models.ForeignKey(Tag, null=True, on_delete=models.SET_NULL)
     start_date = models.DateField(auto_now_add=True)
+    modify_date = models.DateField(auto_now=True)
     due_date = models.DateField(null=True, blank=True)
     is_repeated = models.BooleanField()
     repeated_days = models.CharField(max_length=7, null=True, blank=True)
@@ -31,7 +32,9 @@ class Habit(models.Model):
 class HabitInstance(models.Model):
     habit = models.ForeignKey(
         Habit, related_name='instances', on_delete=models.CASCADE)
-    completed_date = models.DateTimeField(null=True, blank=True)
+    due_date = models.DateField()
+    is_completed = models.BooleanField(default=False)
+    completed_date = models.DateField(null=True, blank=True)
 
 
 class Track(models.Model):
