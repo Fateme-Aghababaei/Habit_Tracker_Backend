@@ -19,7 +19,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Challenge',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
                 ('description', models.CharField(max_length=1000)),
                 ('photo', models.ImageField(upload_to='challenges/')),
@@ -28,10 +29,13 @@ class Migration(migrations.Migration):
                 ('end_date', models.DateField()),
                 ('score', models.PositiveSmallIntegerField(default=50)),
                 ('price', models.PositiveSmallIntegerField(default=0)),
-                ('link', models.CharField(default=Challenge.models.generate_link, max_length=10, unique=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='challenges_created', to=settings.AUTH_USER_MODEL)),
+                ('link', models.CharField(
+                    default=Challenge.models.generate_code, max_length=10, unique=True)),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                 related_name='challenges_created', to=settings.AUTH_USER_MODEL)),
                 ('habits', models.ManyToManyField(to='Habit.habit')),
-                ('participants', models.ManyToManyField(related_name='challenges', to=settings.AUTH_USER_MODEL)),
+                ('participants', models.ManyToManyField(
+                    related_name='challenges', to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

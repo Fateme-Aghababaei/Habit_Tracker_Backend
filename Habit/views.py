@@ -3,10 +3,9 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from .serializers import TagSerializer, AddEditHabitSerializer, HabitSerializer, HabitInstanceSerializer, CompleteHabitSerializer
 from .models import Tag, Habit, HabitInstance
-from datetime import datetime, date
-from django.db.models.functions import Substr
-from django.db.models import F, Q
-from django.contrib.auth.models import User
+from datetime import datetime, date, timedelta
+from django.db.models import Q
+from Profile.models import Score
 
 
 @api_view(['POST'])
@@ -138,20 +137,6 @@ def edit_habit(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['DELETE'])
-def delete_habit(request):
-    id = request.GET.get('id')
-    if id is None:
-        return Response({'error': 'آیدی عادت را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
-    habit_id = int(id)
-    try:
-        habit = Habit.objects.get(id=habit_id, user=request.user)
-        habit.delete()
-        return Response({'id': habit_id}, status.HTTP_200_OK)
-    except:
-        return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
-
-
 @api_view(['GET'])
 def get_habit(request):
     id = request.GET.get('id')
@@ -235,5 +220,34 @@ def complete_habit(request):
         request.user.profile.score += hi.habit.score
         request.user.save()
 
+        Score.objects.create(
+            user=request.user, score=hi.habit.score, type='Habit')
+
         return Response(HabitInstanceSerializer(instance=hi).data, status.HTTP_200_OK)
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+def delete_habit(request):
+    id = request.GET.get('id')
+    if id is None:
+        return Response({'error': 'آیدی عادت را ارسال کنید.'}, status.HTTP_400_BAD_REQUEST)
+    id = int(id)
+    try:
+        h = Habit.objects.get(id=id, user=request.user)
+    except:
+        return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+
+    if h.is_repeated:
+        yesterday = date.today() - timedelta(days=1)
+        h.due_date = yesterday
+        h.save()
+        return Response({'id': id}, status.HTTP_200_OK)
+    else:
+        hi: HabitInstance = h.instances.first()
+        if hi is None or not hi.is_completed:
+            h.delete()
+            if hi is not None:
+                hi.delete()
+            return Response({'id': id}, status.HTTP_200_OK)
+        return Response({'error': 'امکان حذف عادت انجام شده وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)

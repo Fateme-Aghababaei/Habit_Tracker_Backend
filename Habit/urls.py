@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import add_tag, edit_tag, delete_tag, get_tag, get_user_tags, add_habit, edit_habit, delete_habit, get_habit, get_habit_instance, get_user_habits, complete_habit
+from .views import add_tag, edit_tag, delete_tag, get_tag, get_user_tags, add_habit, edit_habit, get_habit, get_habit_instance, get_user_habits, complete_habit, delete_habit
 
 urlpatterns = [
     path('add_tag/', add_tag, name='add_tag'),
@@ -9,9 +9,9 @@ urlpatterns = [
     path('get_user_tags/', get_user_tags, name='get_user_tags'),
     path('add_habit/', add_habit, name='add_habit'),
     path('edit_habit/', edit_habit, name='edit_habit'),
-    path('delete_habit/', delete_habit, name='delete_habit'),
     path('get_habit/', get_habit, name='get_habit'),
     path('get_habit_instance/', get_habit_instance, name='get_habit_instance'),
     path('get_user_habits/', get_user_habits, name='get_user_habits'),
     path('complete_habit/', complete_habit, name='complete_habit'),
+    path('delete_habit/', delete_habit, name='delete_habit'),
 ]

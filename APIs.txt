@@ -364,24 +364,6 @@ Habit:
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-*[DELETE] baseurl/habit/delete_habit/?id=...
-	HEADER: {
-		Authorization: 'Token ...'
-	}
-	
-	RETURN:
-	1. Success: HTTP_200_OK
-	{
-		id: ...
-	}
-	
-	2. Habit Not Found: HTTP_404_NOT_FOUND
-	{
-		error: عادت یافت نشد.
-	{
-	
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 *[GET] baseurl/habit/get_habit/?id=...
 	HEADER: {
 		Authorization: 'Token ...'
@@ -515,3 +497,89 @@ Habit:
 	{
 		error: عادت قبلا انجام شده است.
 	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[DELETE] baseurl/habit/delete_habit/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...
+	}
+	2. Not Found: HTTP_400_BAD_REQUEST
+	{
+		error: عادت یافت نشد.
+	}
+	3. Impossible: HTTP_400_BAD_REQUEST
+	{
+		error: امکان حذف عادت انجام شده وجود ندارد.
+	}
+
+#####################################################################################################################################################################
+#####################################################################################################################################################################
+Challenge:
+
+*[POST] baseurl/challenge/add_challenge/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		name: ...,
+		description: ...,
+		photo: ..., [Image File] [OPTIONAL]
+		start_date: ...,
+		end_date: ...
+	}
+
+	RETURN: Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		photo: ..., [Photo URL]
+		is_public: ...,
+		created_by: {
+			first_name: ...,
+			username: ...,
+			photo: ... [Photo URL]
+		},
+		start_date: ...,
+		end_date: ...,
+		score: ...,
+		price: ...,
+		participants: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			...
+		],
+		habits: [
+			{
+				id: ...,
+				name: ...,
+				description: ...,
+				tag: {
+					id: ...,
+					name: ...,
+					color: ...,
+				}
+				start_date: ...,
+				due_date: ...,
+				is_repeated: ...,
+				repeated_days: ...,
+				score: ...
+			},
+			...
+		],
+		share_code: ...
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
