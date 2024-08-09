@@ -583,3 +583,529 @@ Challenge:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+*[POST] baseurl/challenge/append_habit/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	BODY: {
+		challenge_id: ...,
+		habit_id: ...
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		photo: ..., [Photo URL]
+		is_public: ...,
+		created_by: {
+			first_name: ...,
+			username: ...,
+			photo: ... [Photo URL]
+		},
+		start_date: ...,
+		end_date: ...,
+		score: ...,
+		price: ...,
+		participants: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			...
+		],
+		habits: [
+			{
+				id: ...,
+				name: ...,
+				description: ...,
+				tag: {
+					id: ...,
+					name: ...,
+					color: ...,
+				}
+				start_date: ...,
+				due_date: ...,
+				is_repeated: ...,
+				repeated_days: ...,
+				score: ...
+			},
+			...
+		],
+		share_code: ...
+	}
+
+	2. Habit Not Found: HTTP_404_NOT_FOUND
+	{
+		error: عادت یافت نشد.
+	}
+
+	3. Challenge Not Found: HTTP_404_NOT_FOUND
+	{
+		error:  چالش یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/challenge/edit_challenge/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	BODY: {
+		name: ...,
+		description: ...,
+		photo: ..., [Image File] [OPTIONAL]
+		start_date: ...,
+		end_date: ...
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		photo: ..., [Photo URL]
+		is_public: ...,
+		created_by: {
+			first_name: ...,
+			username: ...,
+			photo: ... [Photo URL]
+		},
+		start_date: ...,
+		end_date: ...,
+		score: ...,
+		price: ...,
+		participants: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			...
+		],
+		habits: [
+			{
+				id: ...,
+				name: ...,
+				description: ...,
+				tag: {
+					id: ...,
+					name: ...,
+					color: ...,
+				}
+				start_date: ...,
+				due_date: ...,
+				is_repeated: ...,
+				repeated_days: ...,
+				score: ...
+			},
+			...
+		],
+		share_code: ...
+	}
+
+	2. Imposible: HTTP_400_BAD_REQUEST
+	{
+		error: با توجه به ثبت‌نام کاربران، امکان ویرایش وجود ندارد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/challenge/remove_habit/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	BODY: {
+		challenge_id: ...,
+		habit_id: ...
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		photo: ..., [Photo URL]
+		is_public: ...,
+		created_by: {
+			first_name: ...,
+			username: ...,
+			photo: ... [Photo URL]
+		},
+		start_date: ...,
+		end_date: ...,
+		score: ...,
+		price: ...,
+		participants: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			...
+		],
+		habits: [
+			{
+				id: ...,
+				name: ...,
+				description: ...,
+				tag: {
+					id: ...,
+					name: ...,
+					color: ...,
+				}
+				start_date: ...,
+				due_date: ...,
+				is_repeated: ...,
+				repeated_days: ...,
+				score: ...
+			},
+			...
+		],
+		share_code: ...
+	}
+
+	2. Habit Not Found: HTTP_404_NOT_FOUND
+	{
+		error: عادت یافت نشد.
+	}
+
+	3. Challenge Not Found: HTTP_404_NOT_FOUND
+	{
+		error:  چالش یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/challenge/participate/?id=... [Challenge Id]
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		photo: ..., [Photo URL]
+		is_public: ...,
+		created_by: {
+			first_name: ...,
+			username: ...,
+			photo: ... [Photo URL]
+		},
+		start_date: ...,
+		end_date: ...,
+		score: ...,
+		price: ...,
+		participants: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			...
+		],
+		habits: [
+			{
+				id: ...,
+				name: ...,
+				description: ...,
+				tag: {
+					id: ...,
+					name: ...,
+					color: ...,
+				}
+				start_date: ...,
+				due_date: ...,
+				is_repeated: ...,
+				repeated_days: ...,
+				score: ...
+			},
+			...
+		],
+		share_code: ...
+	}
+
+	2. Challenge Not Found: HTTP_404_NOT_FOUND
+	{
+		error: چالش یافت نشد.
+	}
+
+	3. Already participated: HTTP_409_CONFLICT
+	{
+		error: کاربر قبلا در چالش ثبت‌نام کرده است.
+	}
+
+	4. Not Enough Score: HTTP_400_BAD_REQUEST
+	{
+		error: امتیاز شما برای شرکت در چالش کم است.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/challenge/get_challenge/?id=...
+*[GET] baseurl/challenge/get_challenge/?code=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		description: ...,
+		photo: ..., [Photo URL]
+		is_public: ...,
+		created_by: {
+			first_name: ...,
+			username: ...,
+			photo: ... [Photo URL]
+		},
+		start_date: ...,
+		end_date: ...,
+		score: ...,
+		price: ...,
+		participants: [
+			{
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			...
+		],
+		habits: [
+			{
+				id: ...,
+				name: ...,
+				description: ...,
+				tag: {
+					id: ...,
+					name: ...,
+					color: ...,
+				}
+				start_date: ...,
+				due_date: ...,
+				is_repeated: ...,
+				repeated_days: ...,
+				score: ...
+			},
+			...
+		],
+		share_code: ...
+	}
+
+	2. Challenge Not Found: HTTP_404_NOT_FOUND
+	{
+		error: چالش یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/challenge/get_active_challenges/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	[
+		{
+			id: ...,
+			name: ...,
+			description: ...,
+			photo: ..., [Photo URL]
+			is_public: ...,
+			created_by: {
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			start_date: ...,
+			end_date: ...,
+			score: ...,
+			price: ...,
+			participants: [
+				{
+					first_name: ...,
+					username: ...,
+					photo: ... [Photo URL]
+				},
+				...
+			],
+			habits: [
+				{
+					id: ...,
+					name: ...,
+					description: ...,
+					tag: {
+						id: ...,
+						name: ...,
+						color: ...,
+					}
+					start_date: ...,
+					due_date: ...,
+					is_repeated: ...,
+					repeated_days: ...,
+					score: ...
+				},
+				...
+			],
+			share_code: ...
+		},
+		...
+	]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/challenge/get_owned_challenges/?active=... [OPTIONAL]
+# active=true --> get active owned challenges
+# active=false --> get finished owned challenges
+# without active param --> get all owned challenges
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	[
+		{
+			id: ...,
+			name: ...,
+			description: ...,
+			photo: ..., [Photo URL]
+			is_public: ...,
+			created_by: {
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			start_date: ...,
+			end_date: ...,
+			score: ...,
+			price: ...,
+			participants: [
+				{
+					first_name: ...,
+					username: ...,
+					photo: ... [Photo URL]
+				},
+				...
+			],
+			habits: [
+				{
+					id: ...,
+					name: ...,
+					description: ...,
+					tag: {
+						id: ...,
+						name: ...,
+						color: ...,
+					}
+					start_date: ...,
+					due_date: ...,
+					is_repeated: ...,
+					repeated_days: ...,
+					score: ...
+				},
+				...
+			],
+			share_code: ...
+		},
+		...
+	]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/challenge/get_participated_challenges/?active=... [OPTIONAL]
+# active=true --> get active participated challenges
+# active=false --> get finished participated challenges
+# without active param --> get all participated challenges
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN: 
+	1. Success: HTTP_200_OK
+	[
+		{
+			id: ...,
+			name: ...,
+			description: ...,
+			photo: ..., [Photo URL]
+			is_public: ...,
+			created_by: {
+				first_name: ...,
+				username: ...,
+				photo: ... [Photo URL]
+			},
+			start_date: ...,
+			end_date: ...,
+			score: ...,
+			price: ...,
+			participants: [
+				{
+					first_name: ...,
+					username: ...,
+					photo: ... [Photo URL]
+				},
+				...
+			],
+			habits: [
+				{
+					id: ...,
+					name: ...,
+					description: ...,
+					tag: {
+						id: ...,
+						name: ...,
+						color: ...,
+					}
+					start_date: ...,
+					due_date: ...,
+					is_repeated: ...,
+					repeated_days: ...,
+					score: ...
+				},
+				...
+			],
+			share_code: ...
+		},
+		...
+	]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[DELETE] baseurl/challenge/delete_challenge/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...
+	}
+
+	2. Challenge Not Found: HTTP_404_NOT_FOUND
+	{
+		error: چالش یافت نشد.
+	}
+
+	3. Impossible: HTTP_400_BAD_REQUEST
+	{
+		error: امکان حذف چالش وجود ندارد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

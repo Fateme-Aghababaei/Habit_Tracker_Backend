@@ -146,6 +146,9 @@ def follow(request):
     except:
         return Response({'error': 'نام کاربری وارد شده صحیح نیست.'}, status.HTTP_404_NOT_FOUND)
 
+    if request.user in user.profile.followers:
+        return Response({'error': 'کاربر قبلا دنبال شده‌است.'}, status.HTTP_400_BAD_REQUEST)
+
     user.profile.followers.add(request.user)
     return Response({}, status.HTTP_200_OK)
 
@@ -169,7 +172,10 @@ def edit_profile(request):
     serializer = EditUserInfoSerializer(data=request.data)
     if serializer.is_valid():
         if 'username' in serializer.validated_data:
-            request.user.username = serializer.validated_data['username']
+            username = serializer.validated_data['username']
+            if User.objects.filter(username=username):
+                return Response({'error': 'نام کاربری تکراری است.'}, status.HTTP_409_CONFLICT)
+            request.user.username = username
         if 'first_name' in serializer.validated_data:
             request.user.first_name = serializer.validated_data['first_name']
         if 'notif_enabled' in serializer.validated_data['profile']:

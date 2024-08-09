@@ -83,11 +83,14 @@ def get_user_tags(request):
 def add_habit(request):
     serializer = AddEditHabitSerializer(data=request.data)
     if serializer.is_valid():
-        tag_id = serializer.validated_data.pop('tag')
-        try:
-            tag = Tag.objects.get(id=tag_id, user=request.user)
-        except:
-            return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+        if 'tag' in serializer.validated_data:
+            tag_id = serializer.validated_data.pop('tag')
+            try:
+                tag = Tag.objects.get(id=tag_id, user=request.user)
+            except:
+                return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+        else:
+            tag = None
 
         if serializer.validated_data['is_repeated'] and ('repeated_days' not in serializer.validated_data or serializer.validated_data['repeated_days'] == '0000000'):
             return Response({'error': 'روزهای تکرار باید مشخص شوند.'}, status.HTTP_400_BAD_REQUEST)
@@ -107,33 +110,46 @@ def edit_habit(request):
         try:
             habit = Habit.objects.get(
                 id=serializer.validated_data['id'], user=request.user)
+        except:
+            return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+
+        if habit.from_challenge:
+            return Response({'error': 'امکان ویرایش عادت‌های مربوط به چالش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
+
+        yesterday = date.today() - timedelta(days=1)
+        weekday = (yesterday.weekday() + 2) % 7
+        if habit.is_repeated and habit.modify_date <= yesterday and (habit.due_date is None or habit.due_date >= yesterday) and habit.repeated_days[weekday] == '1':
+            hi, created = habit.instances.get_or_create(due_date=yesterday)
+
+        if 'tag' in serializer.validated_data:
             tag_id = serializer.validated_data.pop('tag')
             try:
                 tag = Tag.objects.get(id=tag_id, user=request.user)
             except:
                 return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+        else:
+            tag = None
 
-            if serializer.validated_data['is_repeated'] and ('repeated_days' not in serializer.validated_data or serializer.validated_data['repeated_days'] == '0000000'):
-                return Response({'error': 'روزهای تکرار باید مشخص شوند.'}, status.HTTP_400_BAD_REQUEST)
-            if not serializer.validated_data['is_repeated'] and 'due_date' not in serializer.validated_data:
-                return Response({'error': 'تاریخ پایان باید مشخص شود.'}, status.HTTP_400_BAD_REQUEST)
+        if serializer.validated_data['is_repeated'] and ('repeated_days' not in serializer.validated_data or serializer.validated_data['repeated_days'] == '0000000'):
+            return Response({'error': 'روزهای تکرار باید مشخص شوند.'}, status.HTTP_400_BAD_REQUEST)
+        if not serializer.validated_data['is_repeated'] and 'due_date' not in serializer.validated_data:
+            return Response({'error': 'تاریخ پایان باید مشخص شود.'}, status.HTTP_400_BAD_REQUEST)
 
-            habit.name = serializer.validated_data['name']
-            habit.description = serializer.validated_data['description']
-            habit.tag = tag
-            if 'due_date' in serializer.validated_data:
-                habit.due_date = serializer.validated_data['due_date']
-            else:
-                habit.due_date = None
-            habit.is_repeated = serializer.validated_data['is_repeated']
-            if 'repeated_days' in serializer.validated_data:
-                habit.repeated_days = serializer.validated_data['repeated_days']
-            else:
-                habit.repeated_days = None
-            habit.save()
-            return Response(HabitSerializer(instance=habit).data, status.HTTP_200_OK)
-        except:
-            return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+        habit.name = serializer.validated_data['name']
+        habit.description = serializer.validated_data['description']
+        habit.tag = tag
+        if 'due_date' in serializer.validated_data:
+            habit.due_date = serializer.validated_data['due_date']
+        else:
+            habit.due_date = None
+        habit.is_repeated = serializer.validated_data['is_repeated']
+        if 'repeated_days' in serializer.validated_data:
+            habit.repeated_days = serializer.validated_data['repeated_days']
+        else:
+            habit.repeated_days = None
+        habit.save()
+        return Response(HabitSerializer(instance=habit).data, status.HTTP_200_OK)
+
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
@@ -237,6 +253,9 @@ def delete_habit(request):
         h = Habit.objects.get(id=id, user=request.user)
     except:
         return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
+
+    if h.from_challenge:
+        return Response({'error': 'امکان حذف عادت مربوط به چالش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
 
     if h.is_repeated:
         yesterday = date.today() - timedelta(days=1)

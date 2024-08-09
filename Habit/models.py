@@ -20,13 +20,16 @@ class Habit(models.Model):
         User, related_name='habits', on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
     description = models.TextField()
-    tag = models.ForeignKey(Tag, null=True, on_delete=models.SET_NULL)
+    tag = models.ForeignKey(Tag, null=True, blank=True,
+                            on_delete=models.SET_NULL)
     start_date = models.DateField(auto_now_add=True)
     modify_date = models.DateField(auto_now=True)
     due_date = models.DateField(null=True, blank=True)
     is_repeated = models.BooleanField()
     repeated_days = models.CharField(max_length=7, null=True, blank=True)
     score = 1
+    from_challenge = models.ForeignKey(
+        to='Challenge.Challenge', on_delete=models.CASCADE, related_name='participants_habits', null=True, blank=True)
 
 
 class HabitInstance(models.Model):

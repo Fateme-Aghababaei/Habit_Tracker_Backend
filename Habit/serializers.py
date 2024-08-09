@@ -15,7 +15,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class AddEditHabitSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    tag = serializers.IntegerField()
+    tag = serializers.IntegerField(required=False)
     due_date = serializers.DateField(required=False)
     repeated_days = serializers.CharField(required=False)
 
