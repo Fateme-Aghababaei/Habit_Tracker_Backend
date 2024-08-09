@@ -6,7 +6,9 @@ from .models import Challenge
 from Habit.models import Habit
 from django.contrib.auth.models import User
 from Profile.models import Score
-from datetime import date
+from datetime import date, datetime, timedelta, time
+from django_celery_beat.models import PeriodicTask, ClockedSchedule
+import json
 
 
 @api_view(['POST'])
@@ -16,6 +18,18 @@ def add_challenge(request):
         ch: Challenge = serializer.save(created_by=request.user)
         ch.participants.add(request.user)
         ch.save()
+
+        # Create worker to reward participants
+        tomorrow = ch.end_date + timedelta(days=1)
+        dt = datetime.combine(tomorrow, time(6, 0, 0))
+        schedule, _ = ClockedSchedule.objects.get_or_create(clocked_time=dt)
+        PeriodicTask.objects.create(
+            clocked=schedule,
+            name=f'Challenge(id={ch.id})',
+            task='Challenge.tasks.challenge_rewards',
+            args=json.dumps([ch.id])
+        )
+
         return Response(ChallengeSerializer(instance=ch).data, status.HTTP_200_OK)
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
@@ -58,6 +72,14 @@ def edit_challenge(request):
         return Response({'error': 'چالش یافت نشد.'}, status.HTTP_404_NOT_FOUND)
     if ch.participants.count() > 1 or ch.start_date <= date.today():
         return Response({'error': 'با توجه به ثبت‌نام کاربران، امکان ویرایش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
+
+    tomorrow = ch.end_date + timedelta(days=1)
+    dt = datetime.combine(tomorrow, time(6, 0, 0))
+    schedule, _ = ClockedSchedule.objects.get_or_create(clocked_time=dt)
+    task = PeriodicTask.objects.get(name=f'Challenge(id={ch.id})')
+    task.clocked = schedule
+    task.save()
+
     serializer = AddEditChallengeSerializer(
         instance=ch, data=request.data, partial=True)
     if serializer.is_valid():
