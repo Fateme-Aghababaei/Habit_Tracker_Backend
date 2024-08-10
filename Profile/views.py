@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions, status
-from .serializers import LoginSerializer, UserSerializer, FollowerFollowingSerializer, EditUserInfoSerializer, ChangePhotoSerializer
+from .serializers import LoginSerializer, ShortProfileSerializer, UserSerializer, FollowerFollowingSerializer, EditUserInfoSerializer, ChangePhotoSerializer, LoginResponseSerializer
 from django.contrib.auth import authenticate, login as DjangoLogin, logout as DjangoLogout
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -24,10 +24,10 @@ def login(request):
             if user.check_password(password):
                 DjangoLogin(request, user=user)
                 token, created = Token.objects.get_or_create(user=user)
-                return Response({
+                return Response(LoginResponseSerializer({
                     'token': token.key,
                     'username': user.username
-                }, status.HTTP_200_OK)
+                }).data, status.HTTP_200_OK)
             else:
                 raise user.DoesNotExist()
         except:
@@ -92,7 +92,6 @@ def signup(request):
 @api_view(['GET'])
 def get_user(request):
     username = request.GET.get('username')
-    print(username)
     if username:
         user: User = User.objects.get(username=username)
     else:
@@ -200,3 +199,14 @@ def change_photo(request):
         request.user.save()
         return Response({}, status.HTTP_200_OK)
     return Response({'error': serializer.error_messages}, status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_user_brief(request):
+    username = request.GET.get('username')
+    if username:
+        user: User = User.objects.get(username=username)
+    else:
+        user: User = request.user
+    serializer = ShortProfileSerializer(user)
+    return Response(serializer.data, status.HTTP_200_OK)
