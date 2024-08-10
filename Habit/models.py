@@ -38,10 +38,3 @@ class HabitInstance(models.Model):
     due_date = models.DateField()
     is_completed = models.BooleanField(default=False)
     completed_date = models.DateField(null=True, blank=True)
-
-
-class Track(models.Model):
-    name = models.CharField(max_length=250)
-    tag = models.ForeignKey(Tag, null=True, on_delete=models.SET_NULL)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField(null=True, blank=True)

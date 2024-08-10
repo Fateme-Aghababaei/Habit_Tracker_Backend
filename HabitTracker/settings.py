@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'Habit',
     'Challenge',
     'Profile',
+    'Track',
     'rest_framework',
     'rest_framework.authtoken',
     'django_celery_beat',

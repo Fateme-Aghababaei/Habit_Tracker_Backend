@@ -1107,5 +1107,160 @@ Challenge:
 		error: امکان حذف چالش وجود ندارد.
 	}
 
+#####################################################################################################################################################################
+#####################################################################################################################################################################
+Track:
+
+*[POST] baseurl/track/add_track/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	BODY: {
+		name: ...,
+		tag: ..., [Tag Id] [OPTIONAL]
+		start_datetime: ...
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...
+		},
+		start_datetime: ...,
+		end_datetime: ...
+	}
+
+	2. Tag Not Found: HTTP_404_NOT_FOUND
+	{
+		error: برچسب یافت نشد.
+	}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+*[POST] baseurl/track/edit_track/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	BODY: {
+		id: ...,
+		name: ...,
+		tag: ..., [Tag Id] [OPTIONAL]
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...
+		},
+		start_datetime: ...,
+		end_datetime: ...
+	}
+
+	2. Track Not Found: HTTP_404_NOT_FOUND
+	{
+		error: ردیابی یافت نشد.
+	}
+
+	3. Tag Not Found: HTTP_404_NOT_FOUND
+	{
+		error: برچسب یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[POST] baseurl/track/finish_track/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	BODY: {
+		id: ...,
+		end_datetime: ...
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...
+		},
+		start_datetime: ...,
+		end_datetime: ...
+	}
+
+	2. Track Not Found: HTTP_404_NOT_FOUND
+	{
+		error: ردیابی یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/track/get_track/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		name: ...,
+		tag: {
+			id: ...,
+			name: ...,
+			color: ...
+		},
+		start_datetime: ...,
+		end_datetime: ...
+	}
+
+	2. Track Not Found: HTTP_404_NOT_FOUND
+	{
+		error: ردیابی یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/track/get_user_tracks/?page=...[default=1]&item_per_page=...[default=7]
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	[
+		{
+			date: ...,
+			tracks: [
+				{
+					id: ...,
+					name: ...,
+					tag: {
+						id: ...,
+						name: ...,
+						color: ...
+					},
+					start_datetime: ...,
+					end_datetime: ...
+				},
+				...
+			]
+		},
+		...
+	]
