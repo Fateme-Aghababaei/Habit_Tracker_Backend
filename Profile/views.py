@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from datetime import date
 import os
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 @api_view(['POST'])
@@ -201,6 +203,17 @@ def change_photo(request):
     return Response({'error': serializer.error_messages}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('username', openapi.IN_QUERY, description="Username of the user", type=openapi.TYPE_STRING)
+    ],
+    responses={
+        200: openapi.Response(description='User brief retrieved successfully', schema=ShortProfileSerializer),
+        404: openapi.Response(description='User not found', examples={"application/json": {"error": "User not found."}})
+    },
+    operation_description="Get a brief profile of a user. If no username is provided, the profile of the current user is returned."
+)
 @api_view(['GET'])
 def get_user_brief(request):
     username = request.GET.get('username')

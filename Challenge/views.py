@@ -9,8 +9,19 @@ from Profile.models import Score
 from datetime import date, datetime, timedelta, time
 from django_celery_beat.models import PeriodicTask, ClockedSchedule
 import json
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=AddEditChallengeSerializer,
+    responses={
+        200: openapi.Response(description='Challenge created successfully', schema=ChallengeSerializer),
+        400: openapi.Response(description='Invalid input', examples={"application/json": {"error": "اطلاعات واردشده صحیح نمی‌باشد."}})
+    },
+    operation_description="Create a new challenge."
+)
 @api_view(['POST'])
 def add_challenge(request):
     serializer = AddEditChallengeSerializer(data=request.data)
@@ -34,6 +45,23 @@ def add_challenge(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'challenge_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the challenge'),
+            'habit_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the habit'),
+        },
+        required=['challenge_id', 'habit_id']
+    ),
+    responses={
+        200: openapi.Response(description='Habit added to challenge successfully', schema=ChallengeSerializer),
+        400: openapi.Response(description='Invalid input', examples={"application/json": {"error": "اطلاعات واردشده صحیح نمی‌باشد."}}),
+        404: openapi.Response(description='Not found', examples={"application/json": {"error": "عادت یافت نشد."}})
+    },
+    operation_description="Add a habit to an existing challenge."
+)
 @api_view(['POST'])
 def append_habit(request):
     data = request.data
@@ -61,6 +89,16 @@ def append_habit(request):
     return Response(ChallengeSerializer(instance=challenge).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=AddEditChallengeSerializer,
+    responses={
+        200: openapi.Response(description='Challenge edited successfully', schema=ChallengeSerializer),
+        400: openapi.Response(description='Invalid input', examples={"application/json": {"error": "اطلاعات واردشده صحیح نمی‌باشد."}}),
+        404: openapi.Response(description='Not found', examples={"application/json": {"error": "چالش یافت نشد."}})
+    },
+    operation_description="Edit an existing challenge."
+)
 @api_view(['POST'])
 def edit_challenge(request):
     if 'id' not in request.data:
@@ -88,6 +126,23 @@ def edit_challenge(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'challenge_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the challenge'),
+            'habit_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the habit'),
+        },
+        required=['challenge_id', 'habit_id']
+    ),
+    responses={
+        200: openapi.Response(description='Habit removed from challenge successfully', schema=ChallengeSerializer),
+        400: openapi.Response(description='Invalid input', examples={"application/json": {"error": "اطلاعات واردشده صحیح نمی‌باشد."}}),
+        404: openapi.Response(description='Not found', examples={"application/json": {"error": "چالش یافت نشد."}})
+    },
+    operation_description="Remove a habit from a challenge."
+)
 @api_view(['POST'])
 def remove_habit(request):
     data = request.data
@@ -117,6 +172,19 @@ def remove_habit(request):
     return Response(ChallengeSerializer(instance=challenge).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='post',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the challenge", type=openapi.TYPE_INTEGER)
+    ],
+    responses={
+        200: openapi.Response(description='Successfully participated in challenge', schema=ChallengeSerializer),
+        400: openapi.Response(description='Invalid input or insufficient score', examples={"application/json": {"error": "امتیاز شما برای شرکت در چالش کم است."}}),
+        404: openapi.Response(description='Not found', examples={"application/json": {"error": "چالش یافت نشد."}}),
+        409: openapi.Response(description='Conflict', examples={"application/json": {"error": "کاربر قبلا در چالش ثبت‌نام کرده است."}})
+    },
+    operation_description="Participate in a challenge."
+)
 @api_view(['POST'])
 def participate(request):
     id = request.GET.get('id')
@@ -152,6 +220,19 @@ def participate(request):
     return Response(ChallengeSerializer(instance=ch).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the challenge", type=openapi.TYPE_INTEGER),
+        openapi.Parameter('code', openapi.IN_QUERY, description="Share code of the challenge", type=openapi.TYPE_STRING)
+    ],
+    responses={
+        200: openapi.Response(description='Challenge details', schema=ChallengeSerializer),
+        400: openapi.Response(description='Invalid input', examples={"application/json": {"error": "آیدی یا کد چالش را ارسال کنید."}}),
+        404: openapi.Response(description='Not found', examples={"application/json": {"error": "چالش یافت نشد."}})
+    },
+    operation_description="Get details of a specific challenge by ID or code."
+)
 @api_view(['GET'])
 def get_challenge(request):
     id = request.GET.get('id')
@@ -174,6 +255,13 @@ def get_challenge(request):
     return Response(ChallengeSerializer(instance=ch).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    responses={
+        200: openapi.Response(description='List of active public challenges', schema=ChallengeSerializer(many=True))
+    },
+    operation_description="Get a list of all active public challenges."
+)
 @api_view(['GET'])
 def get_active_challenges(request):
     challenges = Challenge.objects.filter(
@@ -181,6 +269,16 @@ def get_active_challenges(request):
     return Response(ChallengeSerializer(instance=challenges, many=True).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('active', openapi.IN_QUERY, description="Filter by active status ('true' or 'false')", type=openapi.TYPE_STRING)
+    ],
+    responses={
+        200: openapi.Response(description='List of challenges created by the user', schema=ChallengeSerializer(many=True))
+    },
+    operation_description="Get a list of challenges created by the user, optionally filtering by active status."
+)
 @api_view(['GET'])
 def get_owned_challenges(request):
     challenges = Challenge.objects.filter(created_by=request.user)
@@ -194,6 +292,16 @@ def get_owned_challenges(request):
     return Response(ChallengeSerializer(instance=challenges, many=True).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('active', openapi.IN_QUERY, description="Filter by active status ('true' or 'false')", type=openapi.TYPE_STRING)
+    ],
+    responses={
+        200: openapi.Response(description='List of challenges the user is participating in', schema=ChallengeSerializer(many=True))
+    },
+    operation_description="Get a list of challenges the user is participating in, optionally filtering by active status."
+)
 @api_view(['GET'])
 def get_participated_challenges(request):
     challenges = Challenge.objects.filter(participants=request.user)
@@ -207,6 +315,18 @@ def get_participated_challenges(request):
     return Response(ChallengeSerializer(instance=challenges, many=True).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='delete',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the challenge", type=openapi.TYPE_INTEGER)
+    ],
+    responses={
+        200: openapi.Response(description='Challenge deleted successfully', examples={"application/json": {"id": 1}}),
+        400: openapi.Response(description='Invalid input or challenge cannot be deleted', examples={"application/json": {"error": "امکان حذف چالش وجود ندارد."}}),
+        404: openapi.Response(description='Not found', examples={"application/json": {"error": "چالش یافت نشد."}})
+    },
+    operation_description="Delete a specific challenge by ID."
+)
 @api_view(['DELETE'])
 def delete_challenge(request):
     id = request.GET.get('id')

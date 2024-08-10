@@ -6,8 +6,42 @@ from .models import Tag, Habit, HabitInstance
 from datetime import datetime, date, timedelta
 from django.db.models import Q
 from Profile.models import Score
+from drf_yasg.utils import swagger_auto_schema  # <-- This is the important import
+from drf_yasg import openapi  # <-- This is for openapi schema and parameters
 
-
+@swagger_auto_schema(
+    method='post',
+    request_body=TagSerializer,
+    responses={
+        200: openapi.Response(
+            description='Tag created successfully',
+            examples={
+                'application/json': {
+                    'id': 1,
+                    'name': 'Health',
+                    'color': '#FF0000'
+                }
+            }
+        ),
+        400: openapi.Response(
+            description='Invalid input',
+            examples={
+                'application/json': {
+                    'error': 'اطلاعات واردشده صحیح نمی‌باشد.'
+                }
+            }
+        ),
+        409: openapi.Response(
+            description='Duplicate tag name',
+            examples={
+                'application/json': {
+                    'error': 'نام برچسب تکراری است.'
+                }
+            }
+        ),
+    },
+    operation_description="Create a new tag for the user."
+)
 @api_view(['POST'])
 def add_tag(request):
     serializer = TagSerializer(data=request.data)
@@ -25,6 +59,39 @@ def add_tag(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=TagSerializer,
+    responses={
+        200: openapi.Response(
+            description='Tag updated successfully',
+            examples={
+                'application/json': {
+                    'id': 1,
+                    'name': 'Work',
+                    'color': '#00FF00'
+                }
+            }
+        ),
+        400: openapi.Response(
+            description='Invalid input',
+            examples={
+                'application/json': {
+                    'error': 'اطلاعات واردشده صحیح نمی‌باشد.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Tag not found',
+            examples={
+                'application/json': {
+                    'error': 'برچسب یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Edit an existing tag."
+)
 @api_view(['POST'])
 def edit_tag(request):
     serializer = TagSerializer(data=request.data)
@@ -43,6 +110,39 @@ def edit_tag(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='delete',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the tag", type=openapi.TYPE_INTEGER)
+    ],
+    responses={
+        200: openapi.Response(
+            description='Tag deleted successfully',
+            examples={
+                'application/json': {
+                    'id': 1
+                }
+            }
+        ),
+        400: openapi.Response(
+            description='ID not provided or invalid',
+            examples={
+                'application/json': {
+                    'error': 'آیدی برچسب را ارسال کنید.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Tag not found',
+            examples={
+                'application/json': {
+                    'error': 'برچسب یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Delete a specific tag by ID."
+)
 @api_view(['DELETE'])
 def delete_tag(request):
     id = request.GET.get('id')
@@ -59,6 +159,35 @@ def delete_tag(request):
         return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the tag", type=openapi.TYPE_INTEGER)
+    ],
+    responses={
+        200: openapi.Response(
+            description='Tag details',
+            schema=TagSerializer
+        ),
+        400: openapi.Response(
+            description='ID not provided or invalid',
+            examples={
+                'application/json': {
+                    'error': 'آیدی برچسب را ارسال کنید.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Tag not found',
+            examples={
+                'application/json': {
+                    'error': 'برچسب یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Retrieve details of a specific tag by ID."
+)
 @api_view(['GET'])
 def get_tag(request):
     id = request.GET.get('id')
@@ -72,6 +201,16 @@ def get_tag(request):
         return Response({'error': 'برچسب یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
 
+@swagger_auto_schema(
+    method='get',
+    responses={
+        200: openapi.Response(
+            description='List of user tags',
+            schema=TagSerializer(many=True)
+        ),
+    },
+    operation_description="Retrieve all tags created by the user."
+)
 @api_view(['GET'])
 def get_user_tags(request):
     tags = Tag.objects.filter(user=request.user)
@@ -79,6 +218,33 @@ def get_user_tags(request):
     return Response(serializer.data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=AddEditHabitSerializer,
+    responses={
+        200: openapi.Response(
+            description='Habit created successfully',
+            schema=HabitSerializer
+        ),
+        400: openapi.Response(
+            description='Invalid input',
+            examples={
+                'application/json': {
+                    'error': 'اطلاعات واردشده صحیح نمی‌باشد.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Tag not found',
+            examples={
+                'application/json': {
+                    'error': 'برچسب یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Create a new habit for the user."
+)
 @api_view(['POST'])
 def add_habit(request):
     serializer = AddEditHabitSerializer(data=request.data)
@@ -103,6 +269,33 @@ def add_habit(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=AddEditHabitSerializer,
+    responses={
+        200: openapi.Response(
+            description='Habit updated successfully',
+            schema=HabitSerializer
+        ),
+        400: openapi.Response(
+            description='Invalid input',
+            examples={
+                'application/json': {
+                    'error': 'اطلاعات واردشده صحیح نمی‌باشد.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Habit not found',
+            examples={
+                'application/json': {
+                    'error': 'عادت یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Edit an existing habit."
+)
 @api_view(['POST'])
 def edit_habit(request):
     serializer = AddEditHabitSerializer(data=request.data)
@@ -153,6 +346,35 @@ def edit_habit(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the habit", type=openapi.TYPE_INTEGER)
+    ],
+    responses={
+        200: openapi.Response(
+            description='Habit details',
+            schema=HabitSerializer
+        ),
+        400: openapi.Response(
+            description='ID not provided or invalid',
+            examples={
+                'application/json': {
+                    'error': 'آیدی عادت را ارسال کنید.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Habit not found',
+            examples={
+                'application/json': {
+                    'error': 'عادت یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Retrieve details of a specific habit by ID."
+)
 @api_view(['GET'])
 def get_habit(request):
     id = request.GET.get('id')
@@ -166,6 +388,35 @@ def get_habit(request):
         return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the habit instance", type=openapi.TYPE_INTEGER)
+    ],
+    responses={
+        200: openapi.Response(
+            description='Habit instance details',
+            schema=HabitInstanceSerializer
+        ),
+        400: openapi.Response(
+            description='ID not provided or invalid',
+            examples={
+                'application/json': {
+                    'error': 'آیدی تکرار عادت را ارسال کنید.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Habit instance not found',
+            examples={
+                'application/json': {
+                    'error': 'تکرار عادت یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Retrieve details of a specific habit instance by ID."
+)
 @api_view(['GET'])
 def get_habit_instance(request):
     id = request.GET.get('id')
@@ -180,6 +431,27 @@ def get_habit_instance(request):
         return Response({'error': 'تکرار عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('date', openapi.IN_QUERY, description="Date for which to retrieve habits (YYYY-MM-DD)", type=openapi.TYPE_STRING)
+    ],
+    responses={
+        200: openapi.Response(
+            description='List of user habits for a specific date',
+            schema=HabitInstanceSerializer(many=True)
+        ),
+        400: openapi.Response(
+            description='Invalid date or date not provided',
+            examples={
+                'application/json': {
+                    'error': 'تاریخ را ارسال کنید.'
+                }
+            }
+        ),
+    },
+    operation_description="Retrieve all habits for a user on a specific date."
+)
 @api_view(['GET'])
 def get_user_habits(request):
     habit_date = request.GET.get('date')
@@ -220,6 +492,33 @@ def get_user_habits(request):
     return Response(HabitInstanceSerializer(instance=instances, many=True).data, status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=CompleteHabitSerializer,
+    responses={
+        200: openapi.Response(
+            description='Habit completed successfully',
+            schema=HabitInstanceSerializer
+        ),
+        400: openapi.Response(
+            description='Invalid input or habit already completed',
+            examples={
+                'application/json': {
+                    'error': 'عادت قبلا انجام شده است.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Habit instance not found',
+            examples={
+                'application/json': {
+                    'error': 'تکرار عادت یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Mark a habit as completed for a specific date."
+)
 @api_view(['POST'])
 def complete_habit(request):
     serializer = CompleteHabitSerializer(data=request.data)
@@ -243,6 +542,39 @@ def complete_habit(request):
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='delete',
+    manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the habit", type=openapi.TYPE_INTEGER)
+    ],
+    responses={
+        200: openapi.Response(
+            description='Habit deleted successfully',
+            examples={
+                'application/json': {
+                    'id': 1
+                }
+            }
+        ),
+        400: openapi.Response(
+            description='ID not provided or invalid',
+            examples={
+                'application/json': {
+                    'error': 'آیدی عادت را ارسال کنید.'
+                }
+            }
+        ),
+        404: openapi.Response(
+            description='Habit not found',
+            examples={
+                'application/json': {
+                    'error': 'عادت یافت نشد.'
+                }
+            }
+        ),
+    },
+    operation_description="Delete a specific habit by ID."
+)
 @api_view(['DELETE'])
 def delete_habit(request):
     id = request.GET.get('id')
