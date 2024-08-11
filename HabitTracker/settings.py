@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'Challenge',
     'Profile',
     'Track',
+    'Notification',
     'rest_framework',
     'rest_framework.authtoken',
     'django_celery_beat',

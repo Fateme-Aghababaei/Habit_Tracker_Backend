@@ -1264,3 +1264,61 @@ Track:
 		},
 		...
 	]
+
+#####################################################################################################################################################################
+#####################################################################################################################################################################
+Notification:
+
+*[GET] baseurl/notification/get_notification/?id=...
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		title: ...,
+		description: ...,
+		creted_at: ...,
+		is_read: ...
+	}
+
+	2. Track Not Found: HTTP_404_NOT_FOUND
+	{
+		error: اعلان یافت نشد.
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/notification/get_user_notifications/?page=...[default=1]&item_per_page=...[default=7]
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	[
+		{
+			id: ...,
+			title: ...,
+			description: ...,
+			creted_at: ...,
+			is_read: ...
+		},
+		...
+	]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/notification/get_unread_notifications_count/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN:
+	1. Success: HTTP_200_OK
+	{
+		count: ...
+	}
+

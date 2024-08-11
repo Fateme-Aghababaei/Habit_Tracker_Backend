@@ -10,6 +10,7 @@ from datetime import date
 import os
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from Notification.models import Notification
 
 
 @api_view(['POST'])
@@ -152,6 +153,10 @@ def follow(request):
         return Response({'error': 'کاربر قبلا دنبال شده‌است.'}, status.HTTP_400_BAD_REQUEST)
 
     user.profile.followers.add(request.user)
+
+    Notification.objects.create(user=user, title='دنبال‌کننده جدید',
+                                description=f'کاربر {request.user.first_name} شما را دنبال کرد.')
+    # TODO push notification if needed
     return Response({}, status.HTTP_200_OK)
 
 

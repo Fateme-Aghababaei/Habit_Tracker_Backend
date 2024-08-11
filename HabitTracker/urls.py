@@ -21,4 +21,5 @@ urlpatterns = [
     path('habit/', include('Habit.urls')),
     path('challenge/', include('Challenge.urls')),
     path('track/', include('Track.urls')),
+    path('notification/', include('Notification.urls')),
 ]

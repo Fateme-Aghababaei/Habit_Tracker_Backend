@@ -2,6 +2,7 @@ from celery import shared_task
 from .models import Challenge
 from Habit.models import Habit, HabitInstance
 from Profile.models import Score
+from Notification.models import Notification
 
 
 @shared_task
@@ -21,5 +22,9 @@ def challenge_rewards(id):
             Score.objects.create(
                 user=user, score=challenge.score, type='Challenge Reward')
 
-            # TODO Notif
+            Notification.objects.create(
+                user=user, title='پایان چالش', description=f'{challenge.name} به پایان رسید. شما از این چالش {challenge.score} امتیاز گرفتید.')
             # TODO Badges
+        else:
+            Notification.objects.create(
+                user=user, title='پایان چالش', description=f'{challenge.name} به پایان رسید. متاسفانه شما تمام عادت‌های این چالش را انجام نداده‌اید و جایزه این چالش را دریافت نمی‌کنید.')
