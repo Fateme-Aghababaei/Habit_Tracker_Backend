@@ -109,15 +109,16 @@ def update_streak(request):
     if date_diff > 1:
         user.profile.streak_start = date.today()
         user.profile.streak_end = date.today()
-        streak = 1
+        # streak = 1
         state = 'reset'
     elif date_diff == 1:
         user.profile.streak_end = date.today()
-        streak = (user.profile.streak_end - user.profile.streak_start).days + 1
+        # streak = (user.profile.streak_end - user.profile.streak_start).days + 1
         state = 'increased'
     else:
         state = 'unchanged'
 
+    streak = (user.profile.streak_end - user.profile.streak_start).days + 1
     user.save()
     return Response({
         'streak': streak,
@@ -206,7 +207,8 @@ def change_photo(request):
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('username', openapi.IN_QUERY, description="Username of the user", type=openapi.TYPE_STRING)
+        openapi.Parameter('username', openapi.IN_QUERY,
+                          description="Username of the user", type=openapi.TYPE_STRING)
     ],
     responses={
         200: openapi.Response(description='User brief retrieved successfully', schema=ShortProfileSerializer),
