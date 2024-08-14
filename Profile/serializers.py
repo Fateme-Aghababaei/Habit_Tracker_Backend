@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from Profile.models import Profile
+from .models import UserBadge
 
 
 class LoginSerializer(serializers.Serializer):
@@ -19,6 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
     followers_num = serializers.SerializerMethodField('get_followers_num')
     followings_num = serializers.SerializerMethodField('get_followings_num')
 
+    badges = serializers.SerializerMethodField('get_badges')
+
     def get_streak(self, obj):
         return (obj.profile.streak_end - obj.profile.streak_start).days + 1
 
@@ -35,10 +37,15 @@ class UserSerializer(serializers.ModelSerializer):
     def get_followings_num(self, obj):
         return obj.followings.count()
 
+    def get_badges(self, obj):
+        badges = UserBadge.objects.filter(profile=obj.profile).order_by(
+            'badge__type', 'badge__count')
+        return UserBadgeSerializer(instance=badges, many=True).data
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'photo', 'score',
-                  'streak', 'inviter', 'followers_num', 'followings_num', 'notif_enabled']
+                  'streak', 'inviter', 'followers_num', 'followings_num', 'notif_enabled', 'badges']
 
 
 class ShortProfileSerializer(serializers.ModelSerializer):
@@ -93,3 +100,13 @@ class ChangePhotoSerializer(serializers.ModelSerializer):
 class LoginResponseSerializer(serializers.Serializer):
     token = serializers.CharField()
     username = serializers.CharField()
+
+
+class UserBadgeSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source='badge.title')
+    description = serializers.CharField(source='badge.description')
+    image = serializers.ImageField(source='badge.image')
+
+    class Meta:
+        model = UserBadge
+        fields = ['title', 'description', 'image', 'awarded_at']

@@ -8,6 +8,9 @@ from django.db.models import Q
 from Profile.models import Score
 from drf_yasg.utils import swagger_auto_schema  # <-- This is the important import
 from drf_yasg import openapi  # <-- This is for openapi schema and parameters
+from .tasks import check_for_habit_badges
+from django.utils import timezone
+
 
 @swagger_auto_schema(
     method='post',
@@ -113,7 +116,8 @@ def edit_tag(request):
 @swagger_auto_schema(
     method='delete',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the tag", type=openapi.TYPE_INTEGER)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the tag", type=openapi.TYPE_INTEGER)
     ],
     responses={
         200: openapi.Response(
@@ -162,7 +166,8 @@ def delete_tag(request):
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the tag", type=openapi.TYPE_INTEGER)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the tag", type=openapi.TYPE_INTEGER)
     ],
     responses={
         200: openapi.Response(
@@ -309,7 +314,7 @@ def edit_habit(request):
         if habit.from_challenge:
             return Response({'error': 'امکان ویرایش عادت‌های مربوط به چالش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
 
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = timezone.now().date() - timedelta(days=1)
         weekday = (yesterday.weekday() + 2) % 7
         if habit.is_repeated and habit.modify_date <= yesterday and (habit.due_date is None or habit.due_date >= yesterday) and habit.repeated_days[weekday] == '1':
             hi, created = habit.instances.get_or_create(due_date=yesterday)
@@ -349,7 +354,8 @@ def edit_habit(request):
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the habit", type=openapi.TYPE_INTEGER)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the habit", type=openapi.TYPE_INTEGER)
     ],
     responses={
         200: openapi.Response(
@@ -391,7 +397,8 @@ def get_habit(request):
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the habit instance", type=openapi.TYPE_INTEGER)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the habit instance", type=openapi.TYPE_INTEGER)
     ],
     responses={
         200: openapi.Response(
@@ -434,7 +441,8 @@ def get_habit_instance(request):
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('date', openapi.IN_QUERY, description="Date for which to retrieve habits (YYYY-MM-DD)", type=openapi.TYPE_STRING)
+        openapi.Parameter('date', openapi.IN_QUERY,
+                          description="Date for which to retrieve habits (YYYY-MM-DD)", type=openapi.TYPE_STRING)
     ],
     responses={
         200: openapi.Response(
@@ -479,10 +487,8 @@ def get_user_habits(request):
     habits = repeated_habits.union(non_repeated_habits)
     instances = []
     for h in habits:
-        try:
-            hi = h.instances.get(due_date=habit_date)
-        except:
-            hi = HabitInstance(habit=h, due_date=habit_date)
+        hi, _ = HabitInstance.objects.get_or_create(
+            habit=h, due_date=habit_date)
         instances.append(hi)
 
     for hi in passed_habit_instances:
@@ -523,29 +529,40 @@ def get_user_habits(request):
 def complete_habit(request):
     serializer = CompleteHabitSerializer(data=request.data)
     if serializer.is_valid():
-        print(serializer.validated_data)
-        hi, _ = HabitInstance.objects.get_or_create(
-            habit__user=request.user, habit__id=serializer.validated_data['habit']['id'], due_date=serializer.validated_data['due_date'])
+        try:
+            hi = HabitInstance.objects.get(
+                habit__user=request.user, habit__id=serializer.validated_data['habit']['id'], due_date=serializer.validated_data['due_date'])
+        except:
+            habit = Habit.objects.get(
+                user=request.user, id=serializer.validated_data['habit']['id'])
+            hi = HabitInstance.objects.create(
+                habit=habit, due_date=serializer.validated_data['due_date'])
         if hi.is_completed:
             return Response({'error': 'عادت قبلا انجام شده است.'}, status.HTTP_400_BAD_REQUEST)
         hi.is_completed = True
-        hi.completed_date = date.today()
+        hi.completed_date = timezone.now().date()
         hi.save()
 
         request.user.profile.score += hi.habit.score
+        request.user.profile.completed_habits += 1
         request.user.save()
 
         Score.objects.create(
             user=request.user, score=hi.habit.score, type='Habit')
 
-        return Response(HabitInstanceSerializer(instance=hi).data, status.HTTP_200_OK)
+        has_new_badges = check_for_habit_badges(request.user)
+        response = HabitInstanceSerializer(instance=hi).data
+        response.update({'has_new_badge': has_new_badges})
+
+        return Response(response, status.HTTP_200_OK)
     return Response({'error': 'اطلاعات واردشده صحیح نمی‌باشد.'}, status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
     method='delete',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the habit", type=openapi.TYPE_INTEGER)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the habit", type=openapi.TYPE_INTEGER)
     ],
     responses={
         200: openapi.Response(
@@ -590,7 +607,7 @@ def delete_habit(request):
         return Response({'error': 'امکان حذف عادت مربوط به چالش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
 
     if h.is_repeated:
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = timezone.now().date() - timedelta(days=1)
         h.due_date = yesterday
         h.save()
         return Response({'id': id}, status.HTTP_200_OK)

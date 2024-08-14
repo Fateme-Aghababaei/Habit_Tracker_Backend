@@ -95,7 +95,7 @@ def get_user_tracks(request):
         date=F('start_datetime__date')).distinct().order_by('-date')[(page-1)*item_per_page: page*item_per_page]
     data = [{
         'date': date['date'],
-        'tracks': Track.objects.filter(user=request.user, start_datetime__date=date['date']).order_by('start_datetime')
+        'tracks': Track.objects.filter(user=request.user, start_datetime__date=date['date']).order_by('-start_datetime')
     } for date in dates]
     serializer = TrackListSerializer(data, many=True)
     return Response(serializer.data, status.HTTP_200_OK)

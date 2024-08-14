@@ -62,7 +62,8 @@ Profile:
 		Authorization: 'Token ...'
 	}
 	
-	RETURN: Success: HTTP_200_OK
+	RETURN: 
+	1. Success: HTTP_200_OK
 	{
 		id: ...,
 		username: ...,
@@ -74,7 +75,21 @@ Profile:
 		inviter: ...	# Inviter username
 		followers_num: ...,
 		followings_num: ...,
-		notif_enabled: ...
+		notif_enabled: ...,
+		badges: [
+			{
+				title: ...,
+				description: ...,
+				image: ...,
+				awarded_at: ...
+			},
+			...
+		]
+	}
+
+	2. User Not Found: HTTP_404_NOT_FOUND
+	{
+		error: کاربر یافت نشد.
 	}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,7 +102,8 @@ Profile:
 	RETURN: Success: HTTP_200_OK
 	{
 		streak: ...,
-		state: ... [unchanged|reset|increased]
+		state: ... [unchanged|reset|increased],
+		has_new_badges: ...
 	}
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,7 +189,88 @@ Profile:
 	
 	RETURN: Success: HTTP_200_OK
 	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/profile/search_users/?username=...[OPTIONAL]
+	HEADER: {
+		Authorization: 'Token ...'
+	}
 	
+	RETURN: 
+	1. Success: HTTP_200_OK
+	{
+		id: ...,
+		username: ...,
+		email: ...,
+		first_name: ...,
+		photo: ...,		# Photo URL
+		score: ...,
+		streak: ...,
+		inviter: ...	# Inviter username
+		followers_num: ...,
+		followings_num: ...,
+		notif_enabled: ...
+	}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] baseurl/profile/get_new_badges/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+	
+	RETURN: Success: HTTP_200_OK
+	[
+		{
+			title: ...,
+			description: ...,
+			image: ...,
+			awarded_at: ...
+		},
+		...
+	]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+*[GET] badges/profile/statistics/
+	HEADER: {
+		Authorization: 'Token ...'
+	}
+
+	RETURN: Success: HTTP_200_OK
+	[
+		{
+			date: ...,
+			total_habits: ...,
+			completed_habits: ...,
+			total_track_duration: ...,
+			total_score: ...,
+			habits: [
+				{
+					tag: {
+						id: ...,
+						name: ...,
+						color: ...
+					},
+					completed_habits: ...,
+				}, 
+				...
+			],
+			tracks: [
+				{
+					tag: {
+						id: ...,
+						name: ...,
+						color: ...
+					},
+					total_track_duration: ...
+				}, 
+				...
+			],
+		},
+		...
+	]
+
 #####################################################################################################################################################################
 #####################################################################################################################################################################
 Habit:
@@ -470,7 +567,7 @@ Habit:
 	
 	BODY: {
 		habit_id: ...,
-		date: ...
+		due_date: ...
 	}
 
 	RETURN:
@@ -491,9 +588,10 @@ Habit:
 		repeated_days: ...,
 		score: ...,
 		is_completed: ...,
-		completed_date: ...
+		completed_date: ...,
+		has_new_badges: ...
 	}
-	2. Already Complete: HTTP_400_BAD_REQUEST
+	2. Already Completed: HTTP_400_BAD_REQUEST
 	{
 		error: عادت قبلا انجام شده است.
 	}
@@ -1322,3 +1420,23 @@ Notification:
 		count: ...
 	}
 
+
+
+[
+	{
+		date: ...,
+		total_habits: ...,
+		completed_habits: ...,
+		total_track_duration: ...,
+		total_score: ...,
+		tags: [
+			{
+				tag: ...,
+				completed_habits: ...,
+				total_track_duration: ...
+			}, 
+			...
+		]
+	},
+	...
+]

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'Profile',
     'Track',
     'Notification',
+    'Badge',
     'rest_framework',
     'rest_framework.authtoken',
     'django_celery_beat',
@@ -134,7 +135,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
@@ -162,7 +163,7 @@ CELERY_RESULT_BACKEND = 'redis://:RJkMg0qlm7j5avugzbzjsNH3@bromo.liara.cloud:312
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'Asia/Tehran'
+CELERY_TIMEZONE = 'Asia/Tehran'
 
 # CELERY BEAT SCHEDULER
 

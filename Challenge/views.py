@@ -7,6 +7,7 @@ from Habit.models import Habit
 from django.contrib.auth.models import User
 from Profile.models import Score
 from datetime import date, datetime, timedelta, time
+from django.utils import timezone
 from django_celery_beat.models import PeriodicTask, ClockedSchedule
 import json
 from drf_yasg.utils import swagger_auto_schema
@@ -108,7 +109,7 @@ def edit_challenge(request):
         ch = Challenge.objects.get(id=id)
     except:
         return Response({'error': 'چالش یافت نشد.'}, status.HTTP_404_NOT_FOUND)
-    if ch.participants.count() > 1 or ch.start_date <= date.today():
+    if ch.participants.count() > 1 or ch.start_date <= timezone.now().date():
         return Response({'error': 'با توجه به ثبت‌نام کاربران، امکان ویرایش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
 
     tomorrow = ch.end_date + timedelta(days=1)
@@ -163,7 +164,7 @@ def remove_habit(request):
     except:
         return Response({'error': 'چالش یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
-    if challenge.participants.count() > 1 or challenge.start_date <= date.today():
+    if challenge.participants.count() > 1 or challenge.start_date <= timezone.now().date():
         return Response({'error': 'امکان حذف عادت وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
 
     challenge.habits.remove(habit)
@@ -175,7 +176,8 @@ def remove_habit(request):
 @swagger_auto_schema(
     method='post',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the challenge", type=openapi.TYPE_INTEGER)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the challenge", type=openapi.TYPE_INTEGER)
     ],
     responses={
         200: openapi.Response(description='Successfully participated in challenge', schema=ChallengeSerializer),
@@ -223,8 +225,10 @@ def participate(request):
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the challenge", type=openapi.TYPE_INTEGER),
-        openapi.Parameter('code', openapi.IN_QUERY, description="Share code of the challenge", type=openapi.TYPE_STRING)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the challenge", type=openapi.TYPE_INTEGER),
+        openapi.Parameter('code', openapi.IN_QUERY,
+                          description="Share code of the challenge", type=openapi.TYPE_STRING)
     ],
     responses={
         200: openapi.Response(description='Challenge details', schema=ChallengeSerializer),
@@ -265,14 +269,15 @@ def get_challenge(request):
 @api_view(['GET'])
 def get_active_challenges(request):
     challenges = Challenge.objects.filter(
-        is_public=True, end_date__gte=date.today())
+        is_public=True, end_date__gte=timezone.now().date())
     return Response(ChallengeSerializer(instance=challenges, many=True).data, status.HTTP_200_OK)
 
 
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('active', openapi.IN_QUERY, description="Filter by active status ('true' or 'false')", type=openapi.TYPE_STRING)
+        openapi.Parameter('active', openapi.IN_QUERY,
+                          description="Filter by active status ('true' or 'false')", type=openapi.TYPE_STRING)
     ],
     responses={
         200: openapi.Response(description='List of challenges created by the user', schema=ChallengeSerializer(many=True))
@@ -285,9 +290,9 @@ def get_owned_challenges(request):
     active = request.GET.get('active')
     if active is not None:
         if active == 'true':
-            challenges = challenges.filter(end_date__gte=date.today())
+            challenges = challenges.filter(end_date__gte=timezone.now().date())
         elif active == 'false':
-            challenges = challenges.filter(end_date__lt=date.today())
+            challenges = challenges.filter(end_date__lt=timezone.now().date())
 
     return Response(ChallengeSerializer(instance=challenges, many=True).data, status.HTTP_200_OK)
 
@@ -295,7 +300,8 @@ def get_owned_challenges(request):
 @swagger_auto_schema(
     method='get',
     manual_parameters=[
-        openapi.Parameter('active', openapi.IN_QUERY, description="Filter by active status ('true' or 'false')", type=openapi.TYPE_STRING)
+        openapi.Parameter('active', openapi.IN_QUERY,
+                          description="Filter by active status ('true' or 'false')", type=openapi.TYPE_STRING)
     ],
     responses={
         200: openapi.Response(description='List of challenges the user is participating in', schema=ChallengeSerializer(many=True))
@@ -308,9 +314,9 @@ def get_participated_challenges(request):
     active = request.GET.get('active')
     if active is not None:
         if active == 'true':
-            challenges = challenges.filter(end_date__gte=date.today())
+            challenges = challenges.filter(end_date__gte=timezone.now().date())
         elif active == 'false':
-            challenges = challenges.filter(end_date__lt=date.today())
+            challenges = challenges.filter(end_date__lt=timezone.now().date())
 
     return Response(ChallengeSerializer(instance=challenges, many=True).data, status.HTTP_200_OK)
 
@@ -318,7 +324,8 @@ def get_participated_challenges(request):
 @swagger_auto_schema(
     method='delete',
     manual_parameters=[
-        openapi.Parameter('id', openapi.IN_QUERY, description="ID of the challenge", type=openapi.TYPE_INTEGER)
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          description="ID of the challenge", type=openapi.TYPE_INTEGER)
     ],
     responses={
         200: openapi.Response(description='Challenge deleted successfully', examples={"application/json": {"id": 1}}),
@@ -338,7 +345,7 @@ def delete_challenge(request):
     except:
         return Response({'error': 'چالش یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
-    if ch.participants.count() > 1 or ch.start_date <= date.today():
+    if ch.participants.count() > 1 or ch.start_date <= timezone.now().date():
         return Response({'error': 'امکان حذف چالش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
 
     for h in ch.habits.all():
