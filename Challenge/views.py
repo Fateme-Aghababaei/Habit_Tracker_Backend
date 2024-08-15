@@ -83,7 +83,7 @@ def append_habit(request):
     except:
         return Response({'error': 'چالش یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
-    habit.from_challenge = True
+    habit.from_challenge = challenge
     habit.save()
     challenge.habits.add(habit)
     challenge.save()

@@ -22,7 +22,7 @@ class Profile(models.Model):
     followers = models.ManyToManyField(
         User, related_name='followings', blank=True)
     notif_enabled = models.BooleanField(null=True, blank=True)
-    badges = models.ManyToManyField(Badge, through='UserBadge')
+    badges = models.ManyToManyField(Badge, through='UserBadge', blank=True)
     completed_habits = models.IntegerField(default=0)
     completed_challenges = models.IntegerField(default=0)
 

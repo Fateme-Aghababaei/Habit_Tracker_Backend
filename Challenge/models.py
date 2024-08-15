@@ -25,7 +25,7 @@ class Challenge(models.Model):
         User, blank=True, related_name="challenges")
     start_date = models.DateField()
     end_date = models.DateField()
-    habits = models.ManyToManyField(Habit)
+    habits = models.ManyToManyField(Habit, blank=True)
     score = models.PositiveSmallIntegerField(default=50)
     price = models.PositiveSmallIntegerField(default=0)
     share_code = models.CharField(

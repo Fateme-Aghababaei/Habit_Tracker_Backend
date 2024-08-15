@@ -386,13 +386,14 @@ Habit:
 		due_date: ...,
 		is_repeated: ...,
 		repeated_days: ...,
-		score: ...
+		score: ...,
+		from_challenge: ... [Challenge Id or Null]
 	}
 	
 	2. Tag Not Found: HTTP_404_NOT_FOUND
 	{
 		error: برچسب یافت نشد
-	{
+	}
 	
 	3. is_repeated = True & repeated_days = null or 0000000: HTTP_400_BAD_REQUEST
 	{
@@ -436,18 +437,19 @@ Habit:
 		due_date: ...,
 		is_repeated: ...,
 		repeated_days: ...,
-		score: ...
+		score: ...,
+		from_challenge: ... [Challenge Id or Null]
 	}
 	
 	2. Tag Not Found: HTTP_404_NOT_FOUND
 	{
 		error: برچسب یافت نشد
-	{
+	}
 	
 	3. Habit Not Found: HTTP_404_NOT_FOUND
 	{
 		error: عادت یافت نشد.
-	{
+	}
 	
 	4. is_repeated = True & repeated_days = null or 0000000: HTTP_400_BAD_REQUEST
 	{
@@ -481,7 +483,8 @@ Habit:
 		due_date: ...,
 		is_repeated: ...,
 		repeated_days: ...,
-		score: ...
+		score: ...,
+		from_challenge: ... [Challenge Id or Null]
 	}
 	
 	2. Habit Not Found: HTTP_404_NOT_FOUND
@@ -499,8 +502,7 @@ Habit:
 	RETURN:
 	1. Success: HTTP_200_OK
 	{
-		habit_id: ...,
-		instance_id: ...,
+		id: ...,
 		name: ...,
 		description: ...,
 		tag: {
@@ -533,8 +535,7 @@ Habit:
 	1. Success: HTTP_200_OK
 	[
 		{
-			habit_id: ...,
-			instance_id: ...,
+			id: ...,
 			name: ...,
 			description: ...,
 			tag: {
@@ -548,7 +549,8 @@ Habit:
 			repeated_days: ...,
 			score: ...,
 			is_completed: ...,
-			completed_date: ...
+			completed_date: ...,
+			from_challenge: ... [Challenge Id or Null]
 		},
 		...
 	]
@@ -566,15 +568,14 @@ Habit:
 	}
 	
 	BODY: {
-		habit_id: ...,
+		id: ...,
 		due_date: ...
 	}
 
 	RETURN:
 	1. Success: HTTP_200_OK
 	{
-		habit_id: ...,
-		instance_id: ...,
+		id: ...,
 		name: ...,
 		description: ...,
 		tag: {
@@ -589,7 +590,8 @@ Habit:
 		score: ...,
 		is_completed: ...,
 		completed_date: ...,
-		has_new_badges: ...
+		has_new_badges: ...,
+		from_challenge: ... [Challenge Id or Null]
 	}
 	2. Already Completed: HTTP_400_BAD_REQUEST
 	{

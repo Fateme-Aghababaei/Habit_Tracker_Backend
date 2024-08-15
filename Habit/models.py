@@ -6,7 +6,7 @@ class Tag(models.Model):
     name = models.CharField(max_length=30)
     user = models.ForeignKey(User, related_name='tags',
                              on_delete=models.CASCADE)
-    color = models.CharField(max_length=7)
+    color = models.CharField(max_length=10)
 
     class Meta:
         constraints = [
@@ -19,7 +19,7 @@ class Habit(models.Model):
     user = models.ForeignKey(
         User, related_name='habits', on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     tag = models.ForeignKey(Tag, null=True, blank=True,
                             on_delete=models.SET_NULL)
     start_date = models.DateField(auto_now_add=True)

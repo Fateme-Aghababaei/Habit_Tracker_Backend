@@ -21,6 +21,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     badges = serializers.SerializerMethodField('get_badges')
 
+    completed_challenges_num = serializers.IntegerField(source='profile.completed_challenges')
+    completed_habits_num = serializers.IntegerField(source='profile.completed_habits')
+
+    unread_notifs_num = serializers.SerializerMethodField('get_unread_notifs_num')
+
     def get_streak(self, obj):
         return (obj.profile.streak_end - obj.profile.streak_start).days + 1
 
@@ -41,11 +46,14 @@ class UserSerializer(serializers.ModelSerializer):
         badges = UserBadge.objects.filter(profile=obj.profile).order_by(
             'badge__type', 'badge__count')
         return UserBadgeSerializer(instance=badges, many=True).data
+    
+    def get_unread_notifs_num(self, obj):
+        return obj.notifications.filter(is_read=False).count()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'photo', 'score',
-                  'streak', 'inviter', 'followers_num', 'followings_num', 'notif_enabled', 'badges']
+                  'streak', 'inviter', 'followers_num', 'followings_num', 'notif_enabled', 'completed_challenges_num', 'completed_habits_num', 'unread_notifs_num', 'badges']
 
 
 class ShortProfileSerializer(serializers.ModelSerializer):
