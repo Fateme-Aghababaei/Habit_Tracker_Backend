@@ -39,7 +39,8 @@ def add_challenge(request):
             clocked=schedule,
             name=f'Challenge(id={ch.id})',
             task='Challenge.tasks.challenge_rewards',
-            args=json.dumps([ch.id])
+            args=json.dumps([ch.id]),
+            one_off=True
         )
 
         return Response(ChallengeSerializer(instance=ch).data, status.HTTP_200_OK)
