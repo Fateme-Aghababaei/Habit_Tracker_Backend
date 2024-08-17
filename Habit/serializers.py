@@ -30,7 +30,7 @@ class HabitSerializer(serializers.ModelSerializer):
     from_challenge = serializers.SerializerMethodField('get_challenge_id')
 
     def get_challenge_id(self, obj):
-        return obj.habit.from_challenge.id if obj.habit.from_challenge else None
+        return obj.from_challenge.id if obj.from_challenge else None
 
     class Meta:
         model = Habit

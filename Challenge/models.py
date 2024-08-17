@@ -30,3 +30,6 @@ class Challenge(models.Model):
     price = models.PositiveSmallIntegerField(default=0)
     share_code = models.CharField(
         max_length=10, default=generate_code, unique=True)
+
+    def __str__(self):
+        return f'[{"PUBLIC" if self.is_public else "PRIVATE"}] [User: {str(self.created_by)}]: {self.name}'

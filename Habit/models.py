@@ -8,6 +8,9 @@ class Tag(models.Model):
                              on_delete=models.CASCADE)
     color = models.CharField(max_length=10)
 
+    def __str__(self):
+        return f'[User: {str(self.user)}] {self.name}'
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -31,6 +34,9 @@ class Habit(models.Model):
     from_challenge = models.ForeignKey(
         to='Challenge.Challenge', on_delete=models.CASCADE, related_name='participants_habits', null=True, blank=True)
 
+    def __str__(self):
+        return f'[User: {str(self.user)}] {self.name}'
+
 
 class HabitInstance(models.Model):
     habit = models.ForeignKey(
@@ -38,3 +44,6 @@ class HabitInstance(models.Model):
     due_date = models.DateField()
     is_completed = models.BooleanField(default=False)
     completed_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.due_date} - {self.habit}'

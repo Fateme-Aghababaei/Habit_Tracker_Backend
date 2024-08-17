@@ -26,6 +26,9 @@ class Profile(models.Model):
     completed_habits = models.IntegerField(default=0)
     completed_challenges = models.IntegerField(default=0)
 
+    def __str__(self):
+        return str(self.user)
+
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
@@ -40,9 +43,15 @@ class Score(models.Model):
     score = models.IntegerField()
     type = models.CharField(max_length=20)
 
+    def __str__(self):
+        return f'[User: {self.user}] - [Type: {self.type}]'
+
 
 class UserBadge(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
     is_new = models.BooleanField(default=True)
     awarded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'[User: {self.profile.user}] - [Badge: {self.badge}]'

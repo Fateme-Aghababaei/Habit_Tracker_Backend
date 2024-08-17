@@ -11,3 +11,6 @@ class Badge(models.Model):
     image = models.ImageField(upload_to='badges/')
     type = models.CharField(max_length=20, choices=TYPES)
     count = models.IntegerField()
+
+    def __str__(self):
+        return self.title
