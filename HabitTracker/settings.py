@@ -168,3 +168,13 @@ CELERY_TIMEZONE = 'Asia/Tehran'
 # CELERY BEAT SCHEDULER
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'karat.tracker@gmail.com'
+EMAIL_HOST_PASSWORD = 'bjso kpbv uehh jmes'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = 'karat.tracker@gmail.com'

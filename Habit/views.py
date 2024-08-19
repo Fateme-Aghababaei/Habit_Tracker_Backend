@@ -312,7 +312,8 @@ def edit_habit(request):
             return Response({'error': 'عادت یافت نشد.'}, status.HTTP_404_NOT_FOUND)
 
         if habit.from_challenge:
-            return Response({'error': 'امکان ویرایش عادت‌های مربوط به چالش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
+            if habit.from_challenge.participants.count() > 1 or habit.from_challenge.start_date <= timezone.now().date():
+                return Response({'error': 'امکان ویرایش عادت‌های مربوط به چالش وجود ندارد.'}, status.HTTP_400_BAD_REQUEST)
 
         yesterday = timezone.now().date() - timedelta(days=1)
         weekday = (yesterday.weekday() + 2) % 7
