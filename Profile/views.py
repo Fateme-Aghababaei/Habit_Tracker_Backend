@@ -314,7 +314,7 @@ def statistics(request):
             if hi.habit not in habits:
                 instances.append(hi)
 
-        instances_id = [h.id for hi in instances]
+        instances_id = [hi.id for hi in instances]
 
         total_habits = 0
         completed_habits = 0
@@ -335,7 +335,7 @@ def statistics(request):
         res['total_track_duration'] = total_track_duration
 
         # Score
-        s = Score.objects.filter(user=user, date=_date).aggregate(
+        s = Score.objects.filter(user=user, date=_date, type__in=['Habit', 'Challenge Reward']).aggregate(
             total_score=Sum('score'))
         total_score = s['total_score']
         if total_score is None:
