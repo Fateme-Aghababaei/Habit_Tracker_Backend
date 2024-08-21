@@ -142,7 +142,7 @@ def update_streak(request):
     has_new_badges = check_for_streak_badges(user)
 
     if not has_new_badges:
-        if UserBadge.objects.filter(user=user, is_new=True):
+        if UserBadge.objects.filter(profile__user=user, is_new=True):
             has_new_badges = True
 
     return Response({
