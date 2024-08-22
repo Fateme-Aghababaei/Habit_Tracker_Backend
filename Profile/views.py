@@ -69,6 +69,7 @@ def signup(request):
         while User.objects.filter(username__iexact=username):
             username = f'user#{get_random_string(8)}'.lower()
 
+        inviter = None  # Initialize inviter to None
         try:
             if 'inviter' in serializer.validated_data:
                 inviter_username = serializer.validated_data['inviter']
