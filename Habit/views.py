@@ -499,6 +499,43 @@ def get_user_habits(request):
     return Response(HabitInstanceSerializer(instance=instances, many=True).data, status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+def get_incomplete_habits_count(request):
+    habit_date = timezone.now().date()
+
+    weekday = (habit_date.weekday() + 2) % 7
+
+    # Passed Repeated Habits
+    passed_habit_instances = HabitInstance.objects.filter(habit__user=request.user, habit__is_repeated=True,
+                                                          habit__start_date__lte=habit_date, habit__modify_date__gt=habit_date, due_date=habit_date)
+
+    # Repeated Habits
+    repeated_habits = Habit.objects.filter(Q(user=request.user), Q(is_repeated=True), Q(modify_date__lte=habit_date), Q(
+        due_date=None) | Q(due_date__gte=habit_date)).filter(repeated_days__regex='^\d{'+str(weekday)+'}1\d{'+str(6-weekday)+'}$')
+
+    # Non-Repeated Habits
+    non_repeated_habits = Habit.objects.filter(
+        user=request.user, is_repeated=False, due_date=habit_date)
+
+    habits = repeated_habits.union(non_repeated_habits)
+    instances = []
+    for h in habits:
+        hi, _ = HabitInstance.objects.get_or_create(
+            habit=h, due_date=habit_date)
+        instances.append(hi)
+
+    for hi in passed_habit_instances:
+        if hi.habit not in habits:
+            instances.append(hi)
+
+    count = 0
+    for hi in instances:
+        if not hi.is_completed:
+            count += 1
+
+    return Response({'count': count}, status.HTTP_200_OK)
+
+
 @swagger_auto_schema(
     method='post',
     request_body=CompleteHabitSerializer,
