@@ -175,7 +175,7 @@ def follow(request):
     except:
         return Response({'error': 'نام کاربری وارد شده صحیح نیست.'}, status.HTTP_404_NOT_FOUND)
 
-    if request.user in user.profile.followers:
+    if request.user in user.profile.followers.all():
         return Response({'error': 'کاربر قبلا دنبال شده‌است.'}, status.HTTP_400_BAD_REQUEST)
 
     user.profile.followers.add(request.user)
@@ -206,7 +206,7 @@ def edit_profile(request):
     if serializer.is_valid():
         if 'username' in serializer.validated_data:
             username = serializer.validated_data['username']
-            if User.objects.filter(username=username):
+            if User.objects.exclude(id=request.user.id).filter(username=username):
                 return Response({'error': 'نام کاربری تکراری است.'}, status.HTTP_409_CONFLICT)
             request.user.username = username
         if 'first_name' in serializer.validated_data:
