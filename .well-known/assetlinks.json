@@ -5,9 +5,9 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "com.example.deeplink_cookbook",
+            "package_name": "com.example.karat_habit_tracker_app",
             "sha256_cert_fingerprints": [
-                "FF:2A:CF:7B:DD:CC:F1:03:3E:E8:B2:27:7C:A2:E3:3C:DE:13:DB:AC:8E:EB:3A:B9:72:A1:0E:26:8A:F5:EC:AF"
+                "53:0D:DD:11:EA:96:31:38:C2:92:C9:24:C4:40:21:00:24:D5:9D:5E:AB:2D:EE:EA:22:1C:76:69:3B:31:CF:A0"
             ]
         }
     }
