@@ -5,6 +5,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
 
 
 schema_view = get_schema_view(
@@ -17,14 +18,22 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+
+def assetlinks(request):
+    with open(r'.well-known/assetlinks.json') as f:
+        return HttpResponse(f, content_type='application/force-download')
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0),
-         name='schema-swagger-ui'),    path('profile/', include('Profile.urls')),
+         name='schema-swagger-ui'),
+    path('profile/', include('Profile.urls')),
     path('habit/', include('Habit.urls')),
     path('challenge/', include('Challenge.urls')),
     path('track/', include('Track.urls')),
     path('notification/', include('Notification.urls')),
+    path('.well-known/assetlinks.json', assetlinks)
 ]
 
 if settings.DEBUG:
