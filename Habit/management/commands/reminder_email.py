@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any):
         schedule, _ = CrontabSchedule.objects.get_or_create(
-            minute="30", hour="23")
+            minute="00", hour="22")
         task, created = PeriodicTask.objects.get_or_create(
             crontab=schedule,
             name='reminder_email_task',

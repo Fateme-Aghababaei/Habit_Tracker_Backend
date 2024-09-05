@@ -99,11 +99,11 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'admiring_shirley',
+        'NAME': 'funny_golick',
         'USER': 'root',
-        'PASSWORD': '4JyJ9obtvqFblkBEZVj2RIqS',
-        'HOST': 'bromo.liara.cloud',
-        'PORT': '30378',
+        'PASSWORD': 'YatyJIPnBZ77eFYsJ0GAtTkp',
+        'HOST': 'fuji.liara.cloud',
+        'PORT': '31023',
         'OPTIONS': {
             'charset': 'utf8mb4'
         }
@@ -158,8 +158,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery Configuration Options
 
-CELERY_BROKER_URL = 'redis://:RJkMg0qlm7j5avugzbzjsNH3@bromo.liara.cloud:31298/0'
-CELERY_RESULT_BACKEND = 'redis://:RJkMg0qlm7j5avugzbzjsNH3@bromo.liara.cloud:31298/0'
+CELERY_BROKER_URL = 'redis://:ZOqa5bZVrgNLZppRhx5S8hRU@fuji.liara.cloud:31624/0'
+CELERY_RESULT_BACKEND = 'redis://:ZOqa5bZVrgNLZppRhx5S8hRU@fuji.liara.cloud:31624/0'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
